@@ -22,4 +22,4 @@ No additional prerequisites.
 
 ## How to Run The Script
 
-The script is still in development. It will be a modified version of [the RecoverMyPassphrase repo]](https://github.com/epiccurious/RecoverMyPassphrase`).
+The script is still in development. It will be a modified version of [the RecoverMyPassphrase repo](https://github.com/epiccurious/RecoverMyPassphrase`).
