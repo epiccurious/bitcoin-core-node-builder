@@ -18,7 +18,7 @@ The script will perform the following actions:
 
 The user should have a fresh install of the latest LTS version of [Ubuntu Desktop](https://ubuntu.com/download/desktop).
 
-No additional prerequisotes.
+No additional prerequisites.
 
 ## How to Run The Script
 
