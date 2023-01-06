@@ -59,6 +59,7 @@ echo -e "daemonwait=1\nserver=1" > ~/.bitcoin/bitcoin.conf
 echo "Bitcoin Core will start then stop then start again."
 $bitcoin_core_extract_dir/bin/bitcoind -daemonwait
 echo "Bitcoin Core started"
+sleep 1
 $bitcoin_core_extract_dir/bin/bitcoin-cli stop
 sleep 5
 echo "Bitcoin Core stopped"
