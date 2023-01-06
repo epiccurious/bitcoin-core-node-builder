@@ -95,6 +95,7 @@ last_block_time=$(echo $blockchain_info | jq '.time')
 size_on_disk=$(echo $blockchain_info | jq '.size_on_disk')
 
 while [[ $ibd_status ]]; do
+  [[ "$sync_progress" == *"e"* ]] && sync_progress="0.000000001"
   clear
   echo -e "The sync progress:          $sync_progress\nThe number of blocks left:  $((headers-blocks))\nThe current chain tip:      $(date -d @$last_block_time | cut -c 5-)\n\nThe estimated size on disk: $(($size_on_disk/1000/1000/1000))GB\nThe estimated free space:   $(df -h / | tail -1 | awk '{print $4}')B\n"
   
