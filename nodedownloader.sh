@@ -87,14 +87,17 @@ while [[ -z $blockchain_info ]]; do
   blockchain_info=$($bitcoin_core_extract_dir/bin/bitcoin-cli getblockchaininfo 2>/dev/null)
 done
 
+# Pull the initial block download status
 ibd_status=$(echo $blockchain_info | jq '.initialblockdownload')
-blocks=$(echo $blockchain_info | jq '.blocks')
-headers=$(echo $blockchain_info | jq '.headers')
-sync_progress=$(echo $blockchain_info | jq '.verificationprogress')
-last_block_time=$(echo $blockchain_info | jq '.time')
-size_on_disk=$(echo $blockchain_info | jq '.size_on_disk')
 
 while [[ $ibd_status -eq "true" ]]; do
+  # Parse blockchain info values
+  blocks=$(echo $blockchain_info | jq '.blocks')
+  headers=$(echo $blockchain_info | jq '.headers')
+  sync_progress=$(echo $blockchain_info | jq '.verificationprogress')
+  last_block_time=$(echo $blockchain_info | jq '.time')
+  size_on_disk=$(echo $blockchain_info | jq '.size_on_disk')
+  
   # Handle case of early sync by replacing any e-9 with 10^-9
   [[ "$sync_progress" == *"e"* ]] && sync_progress="0.000000001"
   
@@ -113,11 +116,6 @@ while [[ $ibd_status -eq "true" ]]; do
   # Check for updated sync state
   blockchain_info=$(~/bitcoin/bin/bitcoin-cli getblockchaininfo)
   ibd_status=$(echo $blockchain_info | jq '.initialblockdownload')
-  blocks=$(echo $blockchain_info | jq '.blocks')
-  headers=$(echo $blockchain_info | jq '.headers')
-  sync_progress=$(echo $blockchain_info | jq '.verificationprogress')
-  last_block_time=$(echo $blockchain_info | jq '.time')
-  size_on_disk=$(echo $blockchain_info | jq '.size_on_disk')
 done
 
 echo -e "This script has completed successfully.\n\nPRESS ANY KEY TO END THE SCRIPT."
