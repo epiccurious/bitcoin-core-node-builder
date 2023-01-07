@@ -17,10 +17,19 @@ The script will perform the following actions:
 
 ## Prerequisites
 
-The user should have a fresh install of the latest LTS version of [Ubuntu Desktop](https://ubuntu.com/download/desktop).
-
-No additional prerequisites.
+A fresh install of [Ubuntu Desktop](https://ubuntu.com/download/desktop).
 
 ## How to Run The Script
 
-The script is still in development. It will be a modified version of [the RecoverMyPassphrase repo](https://github.com/epiccurious/RecoverMyPassphrase`).
+1. Clone the repo.
+    ```bash
+    git clone https://github.com/epiccurious/bitcoin-core-node-builder.git
+    ```
+2. Change directories into the repo.
+    ```bash
+    cd bitcoin-core-node-builder/
+    ```
+3. Run the script.
+    ```bash
+    ./nodedownloader.sh
+    ```
