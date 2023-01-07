@@ -1,4 +1,4 @@
-# URL of to download Bitcoin Core, taken from https://bitcoincore.org/en/download/
+# Set the URL to download Bitcoin Core, taken from https://bitcoincore.org/en/download/
 bitcoin_core_url="https://bitcoincore.org/bin/bitcoin-core-24.0.1/bitcoin-24.0.1-x86_64-linux-gnu.tar.gz"
 
 # These string should not be changed
@@ -11,8 +11,12 @@ bitcoin_core_extract_dir="bitcoin"
 # Amount of time to wait between calls to getblockchaininfo
 sleep_time=10
 
+# Pull the filename and download directory out of the url
 bitcoin_core_dir=$(dirname $bitcoin_core_url)
 bitcoin_core_file=$(basename $bitcoin_core_url)
+
+# Set services to automatically restart during dist-upgrade
+sudo sed -i 's/#$nrconf{restart} = '"'"'i'"'"';/$nrconf{restart} = '"'"'a'"'"';/g' /etc/needrestart/needrestart.conf
 
 # Perform a full system upgrade (comparable to running Ubuntu System Updater)
 clear
@@ -38,31 +42,32 @@ sha_check=$(sha256sum --ignore-missing --check SHA256SUMS 2>/dev/null)
 
 [[ -z $sha_check ]] && echo -e "Unhandled issue with SHA256SUM check.\nProgram cannot continue due to security concerns.\n\nPRESS ANY KEY TO EXIT." && read -n1 && exit 1
 
+# Check signatures (THIS SECTION IS NOT COMPLETE)
 [ -f $signatures_file ] || wget $bitcoin_core_dir/$signatures_file
 #git clone https://github.com/bitcoin-core/guix.sigs.git
 #cp -r guix.sigs/builder-keys/ ./
 #rm -rf guix.sigs/
 #gpg --keyserver hkps://keys.openpgp.org --refresh-keys 
 
-# Extract the gzipped tarball.
+# Extract Bitcoin Core
 echo -n "Extracting the compressed Bitcoin Core download... "
 mkdir $HOME/$bitcoin_core_extract_dir/
 tar -xzf $bitcoin_core_file -C $HOME/$bitcoin_core_extract_dir/ --strip-components=1
 echo "finished."
 
 # Configure the node
-[ -d $HOME/.bitcoin/ ] || mkdir $HOME/.bitcoin
+[ -d $HOME/.bitcoin/ ] || mkdir $HOME/.bitcoin/
 echo -e "daemonwait=1\nserver=1" > $HOME/.bitcoin/bitcoin.conf
 
 echo "Bitcoin Core will start then stop then start again."
-$bitcoin_core_extract_dir/bin/bitcoind -daemonwait
+$HOME/$bitcoin_core_extract_dir/bin/bitcoind -daemonwait
 echo "Bitcoin Core started"
 sleep 1
-$bitcoin_core_extract_dir/bin/bitcoin-cli stop
+$HOME/$bitcoin_core_extract_dir/bin/bitcoin-cli stop
 sleep 5
 echo "Bitcoin Core stopped"
 echo "Bitcoin Core starting"
-$bitcoin_core_extract_dir/bin/bitcoin-qt 2>/dev/null &
+$HOME/$bitcoin_core_extract_dir/bin/bitcoin-qt 2>/dev/null &
 
 echo -e "\nThe bitcoin timechain is now synchronizing.\nThis may take a couple days to a couple weeks depending on the speed of your machine and connection.\nKeep your computer connected to power and internet. If you get disconnected or your computer hangs, rerun this script.\nSleep, suspend, and hibernate will be disabled to maximize the chances everything goes smoothly.\n\nPRESS ANY KEY TO DISABLE SLEEP, SUSPEND, and HIBERNATE."
 read -n1 && echo # Comment this line out for testing and development purposes
