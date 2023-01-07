@@ -1,3 +1,4 @@
+#!/bin/bash
 # Set the URL to download Bitcoin Core, taken from https://bitcoincore.org/en/download/
 bitcoin_core_url="https://bitcoincore.org/bin/bitcoin-core-24.0.1/bitcoin-24.0.1-x86_64-linux-gnu.tar.gz"
 
