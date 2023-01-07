@@ -1,6 +1,6 @@
 # Bitcoin Core Node Builder
 
-Simplify the process of spinning up a new Bitcoin Core node.
+Spin up a secure Bitcoin Core node with ease.
 
 ## What (Will) This Script Do?
 
