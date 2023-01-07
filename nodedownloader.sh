@@ -16,14 +16,12 @@ bitcoin_core_file=$(basename $bitcoin_core_url)
 
 # Perform a full system upgrade (comparable to running Ubuntu System Updater)
 clear
-echo -n "Performing a full system upgrade... "
+echo "Performing a full system upgrade... "
 sudo apt -qq update && sudo apt -qq dist-upgrade -y
-echo "finished."
 
 # Install dependencies
-echo -n "Checking for required dependencies... "
+echo "Checking dependencies... "
 sudo apt -qq install -y libxcb-xinerama0 jq git
-echo "finished."
 
 # Download Bitcoin Core and the list of valid checksums
 echo -n "Downloading Bitcoin Core files... "
@@ -48,13 +46,13 @@ sha_check=$(sha256sum --ignore-missing --check SHA256SUMS 2>/dev/null)
 
 # Extract the gzipped tarball.
 echo -n "Extracting the compressed Bitcoin Core download... "
-mkdir $bitcoin_core_extract_dir/
-tar -xzf $bitcoin_core_file -C $bitcoin_core_extract_dir/ --strip-components=1
+mkdir $HOME/$bitcoin_core_extract_dir/
+tar -xzf $bitcoin_core_file -C $HOME/$bitcoin_core_extract_dir/ --strip-components=1
 echo "finished."
 
 # Configure the node
-[ -d ~/.bitcoin/ ] || mkdir ~/.bitcoin
-echo -e "daemonwait=1\nserver=1" > ~/.bitcoin/bitcoin.conf
+[ -d $HOME/.bitcoin/ ] || mkdir $HOME/.bitcoin
+echo -e "daemonwait=1\nserver=1" > $HOME/.bitcoin/bitcoin.conf
 
 echo "Bitcoin Core will start then stop then start again."
 $bitcoin_core_extract_dir/bin/bitcoind -daemonwait
@@ -73,7 +71,7 @@ read -n1 && echo # Comment this line out for testing and development purposes
 sudo systemctl mask sleep.target suspend.target hibernate.target hybrid-sleep.target
 echo -e "System settings updated.\n\nPlease wait while Bitcoin Core initializes then begins syncing block headers.\nDo not close this terminal window."
 
-blockchain_info=$($bitcoin_core_extract_dir/bin/bitcoin-cli getblockchaininfo 2>/dev/null)
+blockchain_info=$($HOME/$bitcoin_core_extract_dir/bin/bitcoin-cli getblockchaininfo 2>/dev/null)
 
 while [[ -z $blockchain_info ]]; do
   printf "Please wait while the system initializes."
@@ -84,7 +82,7 @@ while [[ -z $blockchain_info ]]; do
   done
   echo
   
-  blockchain_info=$($bitcoin_core_extract_dir/bin/bitcoin-cli getblockchaininfo 2>/dev/null)
+  blockchain_info=$($HOME/$bitcoin_core_extract_dir/bin/bitcoin-cli getblockchaininfo 2>/dev/null)
 done
 
 # Pull the initial block download status
@@ -114,7 +112,7 @@ while [[ $ibd_status -eq "true" ]]; do
   done
   
   # Check for updated sync state
-  blockchain_info=$(~/bitcoin/bin/bitcoin-cli getblockchaininfo)
+  blockchain_info=$($HOME/$bitcoin_core_extract_dir/bin/bitcoin-cli getblockchaininfo)
   ibd_status=$(echo $blockchain_info | jq '.initialblockdownload')
 done
 
