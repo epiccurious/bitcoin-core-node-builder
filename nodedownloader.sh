@@ -71,7 +71,6 @@ read -n1 && echo # Comment this line out for testing and development purposes
 
 ## Disable system sleep, suspend, hibernate, and hybrid-sleep through the system control tool
 sudo systemctl mask sleep.target suspend.target hibernate.target hybrid-sleep.target
-
 echo -e "System settings updated.\n\nPlease wait while Bitcoin Core initializes then begins syncing block headers.\nDo not close this terminal window."
 
 blockchain_info=$($bitcoin_core_extract_dir/bin/bitcoin-cli getblockchaininfo 2>/dev/null)
@@ -96,16 +95,22 @@ last_block_time=$(echo $blockchain_info | jq '.time')
 size_on_disk=$(echo $blockchain_info | jq '.size_on_disk')
 
 while [[ $ibd_status -eq "true" ]]; do
+  # Handle case of early sync by replacing any e-9 with 10^-9
   [[ "$sync_progress" == *"e"* ]] && sync_progress="0.000000001"
-  clear
-  echo -e "The sync progress:          $sync_progress\nThe number of blocks left:  $((headers-blocks))\nThe current chain tip:      $(date -d @$last_block_time | cut -c 5-)\n\nThe estimated size on disk: $(($size_on_disk/1000/1000/1000))GB\nThe estimated free space:   $(df -h / | tail -1 | awk '{print $4}')B\n"
   
+  # Generate output string, clear the terminal, and print the output
+  sync_status="The sync progress:          $sync_progress\nThe number of blocks left:  $((headers-blocks))\nThe current chain tip:      $(date -d @$last_block_time | cut -c 5-)\n\nThe estimated size on disk: $(($size_on_disk/1000/1000/1000))GB\nThe estimated free space:   $(df -h / | tail -1 | awk '{print $4}')B\n"
+  clear
+  echo -e $sync_status
+  
+  # Initiate sleep loop for "sleep_time" seconds
   printf "This screen will refresh in $sleep_time seconds."
   for (( i=1; i<=$sleep_time; i++)); do
     sleep 1
     printf "."
   done
   
+  # Check for updated sync state
   blockchain_info=$(~/bitcoin/bin/bitcoin-cli getblockchaininfo)
   ibd_status=$(echo $blockchain_info | jq '.initialblockdownload')
   blocks=$(echo $blockchain_info | jq '.blocks')
