@@ -13,8 +13,8 @@ BLOCK_TARGET=/media/$USER/DRIVE1/blocks
 find . -name '*.dat' -type f -printf '%f\n' | sort -k1.4 > tomove
 
 # Find the highest numbered rev file
-remove_blk=$(cat tomove | sort | tail -2 | head -1)
-remove_rev=$(cat tomove | sort | tail -1)
+remove_blk=$(cat tomove | tail -2 | head -1)
+remove_rev=$(cat tomove | tail -1)
 
 # Remove the highest-numbered blk*.dat file from tomove
 grep -v $remove_blk tomove > tmpfile && mv tmpfile tomove
