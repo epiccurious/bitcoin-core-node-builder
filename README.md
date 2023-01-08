@@ -5,10 +5,10 @@ Create a secure Bitcoin Core node with ease.
 ## What Does This Script Do?
 
 The script performs the following actions:
-1. Install system updates and, if necessary, reboot
-2. Download, verify, configure, and run Bitcoin Core.
+1. Install system updates and reboot if necessary.
+2. Download, verify, configure, and start Bitcoin Core.
 3. Prevent sleep, suspend, and hibernate mode.
-4. While the chain syncs, display relevant info including the percent synced (e.g. 34%) and free disk space left.
+4. While the initial block download completes, display relevant info including the percent synced (e.g. 34%) and free disk space left.
 5. After the initial block download completes, have the user press Enter/return to complete the script.
 
 ## What Files Does This Script Touch?
