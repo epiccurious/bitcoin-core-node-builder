@@ -17,6 +17,16 @@ chainstate_target=$data_directory_target/chainstate
 configuration_source=$data_directory_source/bitcoin.conf
 configuration_target=$data_directory_target/bitcoin.conf
 
+# Tell Bitcoin Core to stop and wait for the process to end
+clear
+echo "Closing Bitcoin Core in preparation for the data transfer."
+# Get the process ID for bitcoin-qt
+qt_pid=$(pidof bitcoin-qt)
+# Send the stop command to bitcoin-cli
+$HOME/bitcoin/bin/bitcoin-cli stop
+# Wait for the bitcoin-qt process to end
+while [[ $(pidof bitcoin-qt) == $qt_pid ]]; do echo -n "."; sleep 1; done
+
 # Search for all .dat files in the blocks directory and sort by the fourth character
 find $blocks_source -name '*.dat' -type f -printf '%f\n' | sort -k1.4 > tomove
 
@@ -54,16 +64,16 @@ echo "copied."
 
 # TODO: Need to add a check if we're just removing and copying the same thing
 # Remove the old blocks index directory, if one exists
-[ -d $blocks_target/index/ ] && echo -n "Removing the old chainstate data" && rm -r $blocks_target/index/ && echo "finished."
+[ -d $blocks_target/index/ ] && echo -n "Removing the old blocks index directory... " && rm -r $blocks_target/index/ && echo "finished."
 # Copy the blocks index directory
-echo -n "Copying the blocks index... "
+echo -n "Copying the new blocks index directory... "
 cp -r $blocks_source/index/ $blocks_target/index/
 echo "copied."
 
 # Remove the old chainstate directory, if one exists
-[ -d $chainstate_target/ ] && echo -n "Removing the old chainstate data" && rm -r $chainstate_target/ && echo "finished."
+[ -d $chainstate_target/ ] && echo -n "Removing the old chainstate directory... " && rm -r $chainstate_target/ && echo "finished."
 # Copy the new chainstate
-echo -n "Copying the new chainstate ... "
+echo -n "Copying the new chainstate directory... "
 cp -r $chainstate_source/ $chainstate_target/
 echo "copied."
 
@@ -73,5 +83,5 @@ echo "copied."
 echo "Copying the new configuration file."
 cp $configuration_source $configuration_target
 
-echo "Finished the data transfer. Launching Bitcoin Core."
+echo "Finished the data transfer. Launching Bitcoin Core application."
 $HOME/bitcoin/bin/bitcoin-qt &
