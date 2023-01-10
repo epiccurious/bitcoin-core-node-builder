@@ -14,8 +14,6 @@ blocks_source=$data_directory_source/blocks
 blocks_target=$data_directory_target/blocks
 chainstate_source=$data_directory_source/chainstate
 chainstate_target=$data_directory_target/chainstate
-configuration_source=$data_directory_source/bitcoin.conf
-configuration_target=$data_directory_target/bitcoin.conf
 
 ## Tell Bitcoin Core to stop and wait for the process to end
 clear
