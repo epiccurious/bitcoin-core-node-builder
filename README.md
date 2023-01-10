@@ -26,15 +26,19 @@ A fresh install of [Ubuntu Desktop](https://ubuntu.com/download/desktop) with an
 
 ## How to Run The Node Downloader Script
 
-1. Clone the repository.
+1. Install git.
+    ```bash
+    sudo apt install -y git
+    ```
+2. Clone the repository.
     ```bash
     git clone https://github.com/epiccurious/bitcoin-core-node-builder.git
     ```
-2. Change to the repository directory.
+3. Change to the repository directory.
     ```bash
     cd bitcoin-core-node-builder/
     ```
-3. Run the script.
+4. Run the script.
     ```bash
     ./nodebuilder.sh
     ```
