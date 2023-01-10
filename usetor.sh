@@ -23,7 +23,7 @@ sudo su -c "echo -e \"ControlPort 9051\nCookieAuthentication 1\nCookieAuthFileGr
 systemctl restart tor
 
 # Set the Bitcoin Core configuration file
-cat << EOF > $HOME/.bitcoin/bitcoin.conf
+cat << EOF > "$HOME"/.bitcoin/bitcoin.conf
 server=1
 listen=1
 

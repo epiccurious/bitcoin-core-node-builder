@@ -8,7 +8,7 @@ SIMPLE INSTALLATION INSTRUCTIONS
 
 sudo apt install i2pd
 sudo systemctl start i2pd.service
-echo -e "i2psam=127.0.0.1:7656\ndebug=i2p" >> $HOME/.bitcoin/bitcoin.conf
+echo -e "i2psam=127.0.0.1:7656\ndebug=i2p" >> "$HOME"/.bitcoin/bitcoin.conf
 
 
 ERROR that I encountered after installing
