@@ -26,7 +26,7 @@ sudo apt -qq update && sudo apt -qq dist-upgrade -y
 
 # Install dependencies
 echo "Checking dependencies... "
-sudo apt -qq install -y libxcb-xinerama0 jq git
+sudo apt -qq install -y libxcb-xinerama0 jq git wget
 
 # Download Bitcoin Core and the list of valid checksums
 echo -n "Downloading Bitcoin Core files... "
