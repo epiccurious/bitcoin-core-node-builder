@@ -84,4 +84,4 @@ echo "Copying the new configuration file."
 cp $configuration_source $configuration_target
 
 echo "Finished the data transfer. Launching Bitcoin Core application."
-$HOME/bitcoin/bin/bitcoin-qt &
+$HOME/bitcoin/bin/bitcoin-qt & disown
