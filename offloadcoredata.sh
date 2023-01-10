@@ -19,11 +19,11 @@ configuration_target=$data_directory_target/bitcoin.conf
 
 # Tell Bitcoin Core to stop and wait for the process to end
 clear
-echo "Closing Bitcoin Core in preparation for the data transfer."
+echo -n "Closing Bitcoin Core..."
 # Get the process ID for bitcoin-qt
 qt_pid=$(pidof bitcoin-qt)
 # Send the stop command to bitcoin-cli
-$HOME/bitcoin/bin/bitcoin-cli stop
+$HOME/bitcoin/bin/bitcoin-cli stop 1>/dev/null
 # Wait for the bitcoin-qt process to end
 while [[ $(pidof bitcoin-qt) == $qt_pid ]]; do echo -n "."; sleep 1; done
 
