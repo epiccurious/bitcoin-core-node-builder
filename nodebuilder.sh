@@ -39,7 +39,7 @@ echo -n "Verifying the download's checksum... "
 sha_check=$(sha256sum --ignore-missing --check SHA256SUMS $bitcoin_core_file 2>/dev/null)
 [[ "$sha_check" == *"OK" ]] && echo "VALID."
 
-[[ "$sha_check" == *"FAILED"* ]] && echo -e "INVALID. This is very bad.\nProgram cannot continue due to security concerns.\n\nPRESS ANY KEY TO EXIT." && read -n1 && exit 1
+[[ "$sha_check" == *"FAILED" ]] && echo -e "INVALID. This is very bad.\nProgram cannot continue due to security concerns.\n\nPRESS ANY KEY TO EXIT." && read -n1 && exit 1
 
 [[ -z $sha_check ]] && echo -e "Unhandled issue with SHA256SUM check.\nProgram cannot continue due to security concerns.\n\nPRESS ANY KEY TO EXIT." && read -n1 && exit 1
 
