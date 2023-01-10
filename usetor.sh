@@ -9,7 +9,7 @@ sudo apt install -y tor
 
 service tor status
 
-sudo adduser $USER debian-tor
+sudo adduser "$USER" debian-tor
 
 #SOCKSPort 9050
 #Log notice stdout
