@@ -36,8 +36,8 @@ echo "downloaded."
 
 # Verify that the release file's checksum is listed in SHA256SUMS
 echo -n "Verifying the download's checksum... "
-sha_check=$(sha256sum --ignore-missing --check SHA256SUMS 2>/dev/null)
-[[ "$sha_check" == *"OK"* ]] && echo "VALID."
+sha_check=$(sha256sum --ignore-missing --check SHA256SUMS $bitcoin_core_file 2>/dev/null)
+[[ "$sha_check" == *"OK" ]] && echo "VALID."
 
 [[ "$sha_check" == *"FAILED"* ]] && echo -e "INVALID. This is very bad.\nProgram cannot continue due to security concerns.\n\nPRESS ANY KEY TO EXIT." && read -n1 && exit 1
 
