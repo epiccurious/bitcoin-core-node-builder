@@ -36,5 +36,5 @@ A fresh install of [Ubuntu Desktop](https://ubuntu.com/download/desktop) with an
     ```
 3. Run the script.
     ```bash
-    ./nodedownloader.sh
+    ./nodebuilder.sh
     ```
