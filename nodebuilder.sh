@@ -57,7 +57,7 @@ mkdir "$bitcoin_core_extract_dir"/
 tar -xzf "$bitcoin_core_file" -C "$bitcoin_core_extract_dir"/ --strip-components=1
 echo "finished."
 
-## Create a desktop icon for Bitcoin Core
+## Create a desktop shortcut for Bitcoin Core
 cp ./bitcoin.png "$bitcoin_core_extract_dir"/
 shortcut_filename="bitcoin_core.desktop"
 ## Create the desktop file
@@ -78,7 +78,7 @@ gio set "$HOME"/Desktop/"$shortcut_filename" "metadata::trusted" true
 
 # Configure the node
 [ -d "$HOME"/.bitcoin/ ] || mkdir "$HOME"/.bitcoin/
-echo -e "daemonwait=1\nserver=1" > "$HOME"/.bitcoin/bitcoin.conf
+echo -e "server=1" > "$HOME"/.bitcoin/bitcoin.conf
 
 echo "Bitcoin Core will start then stop then start again."
 "$bitcoin_core_binary_dir"/bitcoind -daemonwait
