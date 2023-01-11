@@ -64,11 +64,13 @@ shortcut_filename="bitcoin_core.desktop"
 touch "$HOME"/Desktop/"$shortcut_filename"
 cat << EOF > "$HOME"/Desktop/"$shortcut_filename"
 [Desktop Entry]
-Type=Application
-Terminal=false
 Name=Bitcoin Core
-Icon=$HOME/bitcoin/bitcoin.png
+Comment=Launch Bitcoin Core
 Exec=$HOME/bitcoin/bin/bitcoin-qt & disown
+Icon=$HOME/bitcoin/bitcoin.png
+Terminal=false
+StartupWMClass=Bitcoin Core
+Type=Application
 Categories=Application;
 EOF
 ## Make the shortcut user-executable
