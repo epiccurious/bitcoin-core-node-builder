@@ -7,7 +7,7 @@ data_directory_source="$HOME"/.bitcoin
 ## The blocks target/destination directory, with no trailing slash
 ## For our example, the drive is mounted at "/media/user1/DRIVE1"
 ## and the target/destination directory is "timechain/"
-data_directory_target=/media/$USER/BLOCKS/timechain
+data_directory_target=/media/$USER/DRIVE1/timechain
 
 ## Set the source and target variables
 blocks_source=$data_directory_source/blocks
