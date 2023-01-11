@@ -24,6 +24,7 @@ qt_pid=$(pidof bitcoin-qt)
 "$HOME"/bitcoin/bin/bitcoin-cli stop 1>/dev/null
 ## Wait for the bitcoin-qt process to end
 while [[ $(pidof bitcoin-qt) == "$qt_pid" ]]; do echo -n "."; sleep 1; done
+echo "closed."
 
 ## Search for all .dat files in the blocks directory and sort by the fourth character
 find "$blocks_source" -name '*.dat' -type f -printf '%f\n' | sort -k1.4 > tomove
