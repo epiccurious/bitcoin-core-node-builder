@@ -9,6 +9,10 @@ data_directory_source="$HOME"/.bitcoin
 ## and the target/destination directory is "timechain/"
 data_directory_target=/media/$USER/DRIVE1/timechain
 
+# Name of the directory to extract into, without the trailing "/" (forward slash)
+bitcoin_core_extract_dir="$HOME/bitcoin"
+bitcoin_core_binary_dir="$bitcoin_core_extract_dir/bin"
+
 ## Set the source and target variables
 blocks_source=$data_directory_source/blocks
 blocks_target=$data_directory_target/blocks
@@ -21,7 +25,7 @@ echo -n "Closing Bitcoin Core..."
 ## Get the process ID for bitcoin-qt
 qt_pid=$(pidof bitcoin-qt)
 ## Send the stop command to bitcoin-cli
-"$HOME"/bitcoin/bin/bitcoin-cli stop 1>/dev/null
+"$bitcoin_core_binary_dir"/bitcoin-cli stop 1>/dev/null
 ## Wait for the bitcoin-qt process to end
 while [[ $(pidof bitcoin-qt) == "$qt_pid" ]]; do echo -n "."; sleep 1; done
 echo "closed."
@@ -81,4 +85,4 @@ echo "copied."
 
 ## Launch and disown bitcoin-qt
 echo "Finished the data transfer. Launching Bitcoin Core application."
-"$HOME"/bitcoin/bin/bitcoin-qt & disown
+"$bitcoin_core_binary_dir"/bitcoin-qt & disown

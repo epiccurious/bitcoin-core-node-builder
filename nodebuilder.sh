@@ -7,7 +7,8 @@ checksum_file="SHA256SUMS"
 signatures_file="SHA256SUMS.asc"
 
 # Name of the directory to extract into, without the trailing "/" (forward slash)
-bitcoin_core_extract_dir="bitcoin"
+bitcoin_core_extract_dir="$HOME/bitcoin"
+bitcoin_core_binary_dir="$bitcoin_core_extract_dir/bin"
 
 # Amount of time to wait between calls to getblockchaininfo
 sleep_time=10
@@ -61,14 +62,14 @@ echo "finished."
 echo -e "daemonwait=1\nserver=1" > "$HOME"/.bitcoin/bitcoin.conf
 
 echo "Bitcoin Core will start then stop then start again."
-"$HOME"/$bitcoin_core_extract_dir/bin/bitcoind -daemonwait
+"$bitcoin_core_binary_dir"/bitcoind -daemonwait
 echo "Bitcoin Core started"
 sleep 1
-"$HOME"/$bitcoin_core_extract_dir/bin/bitcoin-cli stop
+"$bitcoin_core_binary_dir"/bitcoin-cli stop
 sleep 5
 echo "Bitcoin Core stopped"
 echo "Bitcoin Core starting"
-"$HOME"/$bitcoin_core_extract_dir/bin/bitcoin-qt 2>/dev/null &
+"$bitcoin_core_binary_dir"/bitcoin-qt 2>/dev/null &
 
 echo -e "\nThe bitcoin timechain is now synchronizing.\nThis may take a couple days to a couple weeks depending on the speed of your machine and connection.\nKeep your computer connected to power and internet. If you get disconnected or your computer hangs, rerun this script.\nSleep, suspend, and hibernate will be disabled to maximize the chances everything goes smoothly.\n\nPRESS ANY KEY TO DISABLE SLEEP, SUSPEND, and HIBERNATE."
 read -rn1 && echo # Comment this line out for testing and development purposes
@@ -77,7 +78,7 @@ read -rn1 && echo # Comment this line out for testing and development purposes
 sudo systemctl mask sleep.target suspend.target hibernate.target hybrid-sleep.target
 echo -e "System settings updated.\n\nPlease wait while Bitcoin Core initializes then begins syncing block headers.\nDo not close this terminal window."
 
-blockchain_info=$("$HOME"/$bitcoin_core_extract_dir/bin/bitcoin-cli getblockchaininfo 2>/dev/null)
+blockchain_info=$("$bitcoin_core_binary_dir"/bitcoin-cli getblockchaininfo 2>/dev/null)
 
 while [[ -z $blockchain_info ]]; do
   printf "Please wait while the system initializes."
@@ -88,7 +89,7 @@ while [[ -z $blockchain_info ]]; do
   done
   echo
   
-  blockchain_info=$("$HOME"/"$bitcoin_core_extract_dir"/bin/bitcoin-cli getblockchaininfo 2>/dev/null)
+  blockchain_info=$("$HOME"/"$bitcoin_core_binary_dir"/bitcoin-cli getblockchaininfo 2>/dev/null)
 done
 
 # Pull the initial block download status
@@ -118,7 +119,7 @@ while [[ $ibd_status -eq "true" ]]; do
   done
   
   # Check for updated sync state
-  blockchain_info=$("$HOME"/$bitcoin_core_extract_dir/bin/bitcoin-cli getblockchaininfo)
+  blockchain_info=$("$bitcoin_core_binary_dir"/bitcoin-cli getblockchaininfo)
   ibd_status=$(echo "$blockchain_info" | jq '.initialblockdownload')
 done
 
