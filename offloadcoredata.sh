@@ -61,7 +61,8 @@ rm tomove
 ## Copy the highest-numbered blk*.dat and rev*.dat
 ## We will leave the original copy, rather than move.
 echo -n "Copying $highest_blk_dat and $highest_rev_dat... "
-rsync -ptgouq --partial "$blocks_source"/$highest_{blk,rev}_dat "$blocks_target"/
+rsync -ptgouq --partial "$blocks_source"/"$highest_blk_dat" "$blocks_target"/
+rsync -ptgouq --partial "$blocks_source"/"$highest_rev_dat" "$blocks_target"/
 echo "copied."
 
 ## Copy the blocks index
