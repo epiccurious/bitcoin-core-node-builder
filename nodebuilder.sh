@@ -53,8 +53,8 @@ sha_check=$(sha256sum --ignore-missing --check SHA256SUMS "$bitcoin_core_file" 2
 
 # Extract Bitcoin Core
 echo -n "Extracting the compressed Bitcoin Core download... "
-mkdir "$HOME"/"$bitcoin_core_extract_dir"/
-tar -xzf "$bitcoin_core_file" -C "$HOME"/"$bitcoin_core_extract_dir"/ --strip-components=1
+mkdir "$bitcoin_core_extract_dir"/
+tar -xzf "$bitcoin_core_file" -C "$bitcoin_core_extract_dir"/ --strip-components=1
 echo "finished."
 
 # Configure the node
@@ -89,7 +89,7 @@ while [[ -z $blockchain_info ]]; do
   done
   echo
   
-  blockchain_info=$("$HOME"/"$bitcoin_core_binary_dir"/bitcoin-cli getblockchaininfo 2>/dev/null)
+  blockchain_info=$("$bitcoin_core_binary_dir"/bitcoin-cli getblockchaininfo 2>/dev/null)
 done
 
 # Pull the initial block download status
