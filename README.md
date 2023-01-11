@@ -2,6 +2,10 @@
 
 Create a secure Bitcoin Core node with ease.
 
+NOTE: This code is not yet ready for production.
+NOTE: This code does NOT cryptographically verify signatures yet.
+NOTE: This code is still under development. Test at your own risk.
+
 ## What Does This Script Do?
 
 The script performs the following actions:
@@ -25,6 +29,10 @@ The script modifies the following files:
 A fresh install of [Ubuntu Desktop](https://ubuntu.com/download/desktop) with an internet connection enabled.
 
 ## How to Run The Node Downloader Script
+
+NOTE: This code is not yet ready for production.
+NOTE: This code does NOT cryptographically verify signatures yet.
+NOTE: This code is still under development. Test at your own risk.
 
 1. Install git.
     ```bash
