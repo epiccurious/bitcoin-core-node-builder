@@ -48,8 +48,6 @@ while read -r file; do
   echo -n "Moving and linking $file... "
   ## Move the blk*.dat and rev*.dat files
   rsync -ptgouq --partial --remove-source-files "$blocks_source"/"$file" "$blocks_target"/"$file"
-  ## Set the permissions to read-only
-  chmod 400 "$blocks_target"/"$file"
   ## Create symbolic link from target to data dir
   ln -s "$blocks_target"/"$file" "$blocks_source"/"$file"
   ## Create a new line after rev files are copied
