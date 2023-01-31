@@ -68,16 +68,7 @@ echo -n "Copying the blocks index directory... "
 rsync -auq --partial --delete "$blocks_source"/index/ "$blocks_target"/index/
 echo "copied."
 
-## Copy the chainstate
-## Create a list of files
-find "$chainstate_source" -type f -printf '%f\n' | sort > tomove
-echo -n "Synchronizing $(wc -l < tomove) chainstate files..."
-## Copy each line at a time
-while read -r file; do
-  echo -n "."
-  rsync -ptgouq --partial "$chainstate_source"/"$file" "$chainstate_target"/
-done <tomove
-echo && rm tomove
+## Copy the chainstate/ directory
 ## Delete old chainstate files left in the target directory
 rsync -auq --partial --delete "$chainstate_source"/ "$chainstate_target"/
 echo "copied."
