@@ -36,6 +36,7 @@ find "$blocks_source" -name '*.dat' -type f -printf '%f\n' | sort -k1.4 > tomove
 ## Find the highest numbered rev file
 highest_blk_dat=$(tail -2 tomove | head -1)
 highest_rev_dat=$(tail -1 tomove)
+echo {"${highest_blk_dat}","${highest_rev_dat}"} # for testing and development purposes only
 
 ## Remove the highest-numbered blk*.dat file from tomove
 grep -v "$highest_blk_dat" tomove > tmpfile && mv tmpfile tomove
