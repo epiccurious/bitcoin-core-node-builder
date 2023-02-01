@@ -44,7 +44,7 @@ grep -v "${highest_blk_dat}" tomove > tmpfile && mv tmpfile tomove
 ## Remove the highest-numbered rev*.dat file from tomove
 grep -v "${highest_rev_dat}" tomove > tmpfile && mv tmpfile tomove
 
-echo "Moving $(wc -l < tomove) block files."
+echo -n "Moving $(wc -l < tomove) block files."
 ## Iterate through each line of tomove
 while read -r file; do
   ## Move the blk*.dat and rev*.dat files
@@ -54,7 +54,7 @@ while read -r file; do
   ## Create a new line after rev files are copied
   echo -n "."
 done <tomove
-echo "moved."
+echo " moved."
 ## Remove the list of files to move
 rm tomove
 
