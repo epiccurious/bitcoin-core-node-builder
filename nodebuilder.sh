@@ -80,7 +80,7 @@ gio set "$HOME"/Desktop/"$shortcut_filename" "metadata::trusted" true
 
 # Configure the node
 [ -d "$HOME"/.bitcoin/ ] || mkdir "$HOME"/.bitcoin/
-echo -e "server=1" > "$HOME"/.bitcoin/bitcoin.conf
+echo -e "server=1\nmempoolfullrbf=1" > "$HOME"/.bitcoin/bitcoin.conf
 
 echo "Bitcoin Core will start then stop then start again."
 "$bitcoin_core_binary_dir"/bitcoind -daemonwait
