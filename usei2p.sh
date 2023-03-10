@@ -39,6 +39,10 @@ make
 #sudo make install
 sudo ln -s /usr/local/bin/i2pd /usr/sbin/i2pd
 
+sudo systemctl unmask i2pd.service
+sudo systemctl start i2pd.service
+sudo ln -s /usr/local/bin/i2pd /usr/sbin/i2pd
+
 
 MACOS INSTRUCTIONS
 
@@ -58,7 +62,3 @@ touch $HOME/dist/addressbook/local.csv
 
 cd $HOME/dist/
 ./i2pd --datadir .
-
-sudo systemctl unmask i2pd.service
-sudo systemctl start i2pd.service
-sudo ln -s /usr/local/bin/i2pd /usr/sbin/i2pd
