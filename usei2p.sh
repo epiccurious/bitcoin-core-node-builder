@@ -38,6 +38,27 @@ cmake -DWITH_AESNI=OFF
 make
 #sudo make install
 sudo ln -s /usr/local/bin/i2pd /usr/sbin/i2pd
+
+
+MACOS INSTRUCTIONS
+
+brew install cmake gcc miniupnpc openssl@3
+torsocks git clone https://github.com/PurpleI2P/i2pd.git
+cd i2pd/build/
+export OPENSSL_ROOT_DIR="/opt/homebrew/opt/openssl@3"
+cmake -L
+make HOMEBREW=1 -j8
+
+mkdir -p $HOME/dist/addressbook/
+cp i2pd $HOME/dist
+cp ../contrib/i2pd.conf $HOME/dist
+cp ../contrib/tunnels.conf $HOME/dist
+cp -R ../contrib/certificates/ $HOME/dist
+touch $HOME/dist/addressbook/local.csv
+
+cd $HOME/dist/
+./i2pd --datadir .
+
 sudo systemctl unmask i2pd.service
 sudo systemctl start i2pd.service
 sudo ln -s /usr/local/bin/i2pd /usr/sbin/i2pd
