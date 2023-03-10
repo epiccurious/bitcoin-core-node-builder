@@ -46,8 +46,8 @@ sudo ln -s /usr/local/bin/i2pd /usr/sbin/i2pd
 
 MACOS INSTRUCTIONS
 
-brew install cmake gcc miniupnpc openssl@3
-torsocks git clone https://github.com/PurpleI2P/i2pd.git
+brew install cmake gcc git miniupnpc openssl@3 tor torsocks
+torsocks /usr/local/Cellar/git/*/bin/git clone https://github.com/PurpleI2P/i2pd.git
 cd i2pd/build/
 export OPENSSL_ROOT_DIR="/opt/homebrew/opt/openssl@3"
 cmake -L
