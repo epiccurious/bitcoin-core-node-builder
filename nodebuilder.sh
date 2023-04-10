@@ -25,6 +25,9 @@ clear
 echo "Performing a full system upgrade... "
 sudo apt -qq update && sudo apt -qq dist-upgrade -y
 
+# Set flag to automatically restart services during dist-upgrade back to interactive mode.
+sudo sed -i 's/#$nrconf{restart} = '"'"'a'"'"';/$nrconf{restart} = '"'"'i'"'"';/g' /etc/needrestart/needrestart.conf
+
 # Install dependencies
 echo "Checking dependencies... "
 sudo apt -qq install -y libxcb-xinerama0 jq git wget
@@ -39,15 +42,12 @@ echo "downloaded."
 echo -n "Verifying the download's checksum... "
 sha_check=$(sha256sum --ignore-missing --check SHA256SUMS "$bitcoin_core_file" 2>/dev/null)
 [[ "$sha_check" == *"OK" ]] && echo "VALID."
-
 [[ "$sha_check" == *"FAILED" ]] && echo -e "INVALID. This is very bad.\nProgram cannot continue due to security concerns.\n\nPRESS ANY KEY TO EXIT." && read -rn1 && exit 1
-
 [[ -z $sha_check ]] && echo -e "Unhandled issue with SHA256SUM check.\nProgram cannot continue due to security concerns.\n\nPRESS ANY KEY TO EXIT." && read -rn1 && exit 1
 
 # Check signatures (THIS SECTION IS NOT COMPLETE)
 [ -f "$signatures_file" ] || wget "$bitcoin_core_dir"/"$signatures_file"
 #git clone https://github.com/bitcoin-core/guix.sigs.git
-#cp -r guix.sigs/builder-keys/ ./
 #rm -rf guix.sigs/
 #gpg --keyserver hkps://keys.openpgp.org --refresh-keys 
 
