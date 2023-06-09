@@ -80,7 +80,7 @@ tar -xzf "$bitcoin_core_file" -C "$bitcoin_core_extract_dir"/ --strip-components
 echo "finished."
 
 ## Create a desktop shortcut for Bitcoin Core
-cp ./bitcoin.png "$bitcoin_core_extract_dir"/
+cp $(dirname $0)/bitcoin.png "$bitcoin_core_extract_dir"/
 shortcut_filename="bitcoin_core.desktop"
 ## Create the desktop file
 touch "$HOME"/Desktop/"$shortcut_filename"
