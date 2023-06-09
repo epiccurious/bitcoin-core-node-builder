@@ -38,7 +38,7 @@ sudo sed -i 's/#$nrconf{restart} = '"'"'a'"'"';/$nrconf{restart} = '"'"'i'"'"';/
 
 # Install dependencies
 echo "Checking dependencies... "
-sudo apt -qq install -y libxcb-xinerama0 jq git wget
+sudo apt -qq install -y git gnupg jq libxcb-xinerama0 wget
 
 # Download Bitcoin Core and the list of valid checksums
 echo -n "Downloading Bitcoin Core files... "
