@@ -1,21 +1,24 @@
 #!/bin/bash
+set -e
+
 # Set the URL to download Bitcoin Core, taken from https://bitcoincore.org/en/download/
 bitcoin_core_url="https://bitcoincore.org/bin/bitcoin-core-24.0.1/bitcoin-24.0.1-x86_64-linux-gnu.tar.gz"
-
-# These string should not be changed
-checksum_file="SHA256SUMS"
-signatures_file="SHA256SUMS.asc"
-
-# Name of the directory to extract into, without the trailing "/" (forward slash)
-bitcoin_core_extract_dir="$HOME/bitcoin"
-bitcoin_core_binary_dir="$bitcoin_core_extract_dir/bin"
-
-# Amount of time to wait between calls to getblockchaininfo
-sleep_time=10
 
 # Pull the filename and download directory out of the url
 bitcoin_core_dir=$(dirname $bitcoin_core_url)
 bitcoin_core_file=$(basename $bitcoin_core_url)
+
+# The filenames for the hash and signature
+sha256_hash_file="SHA256SUMS"
+gpg_signatures_file="SHA256SUMS.asc"
+gpg_signatures_required="3"
+
+# Name of the directory to extract into, without the trailing "/" (forward slash)
+bitcoin_core_extract_dir="${HOME}/bitcoin"
+bitcoin_core_binary_dir="${bitcoin_core_extract_dir}/bin"
+
+# Amount of time to wait between calls to getblockchaininfo
+sleep_time=10
 
 # Set services to automatically restart during dist-upgrade
 sudo sed -i 's/#$nrconf{restart} = '"'"'i'"'"';/$nrconf{restart} = '"'"'a'"'"';/g' /etc/needrestart/needrestart.conf
@@ -34,22 +37,36 @@ sudo apt -qq install -y libxcb-xinerama0 jq git wget
 
 # Download Bitcoin Core and the list of valid checksums
 echo -n "Downloading Bitcoin Core files... "
-[ -f "$bitcoin_core_file" ] || wget "$bitcoin_core_url"
-[ -f "$checksum_file" ] || wget "$bitcoin_core_dir"/"$checksum_file"
-echo "downloaded."
+[ -f "${bitcoin_core_file}" ] || wget -q "${bitcoin_core_dir}"/"${bitcoin_core_file}"
+[ -f "${sha256_hash_file}" ] || wget -q "${bitcoin_core_dir}"/"${sha256_hash_file}"
+[ -f "${gpg_signatures_file}" ] || wget -q "${bitcoin_core_dir}"/"${gpg_signatures_file}"
+echo "ok."
 
 # Verify that the release file's checksum is listed in SHA256SUMS
-echo -n "Verifying the download's checksum... "
-sha_check=$(sha256sum --ignore-missing --check SHA256SUMS "$bitcoin_core_file" 2>/dev/null)
-[[ "$sha_check" == *"OK" ]] && echo "VALID."
-[[ "$sha_check" == *"FAILED" ]] && echo -e "INVALID. This is very bad.\nProgram cannot continue due to security concerns.\n\nPRESS ANY KEY TO EXIT." && read -rn1 && exit 1
-[[ -z $sha_check ]] && echo -e "Unhandled issue with SHA256SUM check.\nProgram cannot continue due to security concerns.\n\nPRESS ANY KEY TO EXIT." && read -rn1 && exit 1
+echo -n "  Verifying the download's file integrity... "
+sha256_check=$(echo $(grep ${bitcoin_core_file} ${sha256_hash_file}) | sha256sum --check 2>/dev/null)
+if [[ "${sha256_check}" == *"OK" ]]; then
+  echo "ok."
+else
+  echo -e "INVALID. The download has failed.\nThis script cannot continue due to security concerns.\n\nPRESS ANY KEY TO EXIT."
+  read -rn1
+  exit 1
+fi
 
 # Check signatures (THIS SECTION IS NOT COMPLETE)
-[ -f "$signatures_file" ] || wget "$bitcoin_core_dir"/"$signatures_file"
-#git clone https://github.com/bitcoin-core/guix.sigs.git
-#rm -rf guix.sigs/
-#gpg --keyserver hkps://keys.openpgp.org --refresh-keys 
+echo -n "  Verifying the download's signature... "
+[ -d guix.sigs/ ] || git clone https://github.com/bitcoin-core/guix.sigs.git
+gpg --quiet --import guix.sigs/builder-keys/*.gpg
+gpg_good_signature_count=$(gpg --verify "${gpg_signatures_file}"  2>&1 | grep "^gpg: Good signature from " | wc -l)
+if [[ "${gpg_good_signature_count}" -ge "${gpg_signatures_required}" ]]; then
+  echo "${gpg_good_signature_count} signatures."
+  rm "${sha256_hash_file}"
+  rm "${gpg_signatures_file}"
+else
+  echo -e "INVALID. The download has failed.\nThis script cannot continue due to security concerns.\n\nPRESS ANY KEY TO EXIT."
+  read -rn1
+  exit 1
+fi
 
 # Extract Bitcoin Core
 echo -n "Extracting the compressed Bitcoin Core download... "
