@@ -74,11 +74,13 @@ else
 fi
 
 # Extract Bitcoin Core
-echo -n "Extracting the compressed Bitcoin Core download... "
-mkdir "$bitcoin_core_extract_dir"/
-tar -xzf "$bitcoin_core_file" -C "$bitcoin_core_extract_dir"/ --strip-components=1
-echo "finished."
+echo -n "Extracting Bitcoin Core... "
+[ -d "${bitcoin_core_extract_dir}" ] || mkdir "${bitcoin_core_extract_dir}"/
+tar -xzf "${bitcoin_core_file}" -C "${bitcoin_core_extract_dir}"/ --strip-components=1
+echo "ok."
 
+echo "Configuring Bitcoin Core... "
+echo -n "  Creating the desktop shortcut... "
 ## Create a desktop shortcut for Bitcoin Core
 cp $(dirname $0)/bitcoin.png "$bitcoin_core_extract_dir"/
 shortcut_filename="bitcoin_core.desktop"
@@ -99,27 +101,16 @@ EOF
 chmod u+x "$HOME"/Desktop/"$shortcut_filename"
 ## Make the shortcut trusted
 gio set "$HOME"/Desktop/"$shortcut_filename" "metadata::trusted" true
+echo "ok."
 
 # Configure the node
+echo -n "  Setting default node behavior... "
 [ -d "$HOME"/.bitcoin/ ] || mkdir "$HOME"/.bitcoin/
 echo -e "server=1\nmempoolfullrbf=1" > "$HOME"/.bitcoin/bitcoin.conf
+echo "ok."
 
-echo "Bitcoin Core will start then stop then start again."
-"$bitcoin_core_binary_dir"/bitcoind -daemonwait
-echo "Bitcoin Core started"
-sleep 1
-"$bitcoin_core_binary_dir"/bitcoin-cli stop
-sleep 5
-echo "Bitcoin Core stopped"
-echo "Bitcoin Core starting"
-"$bitcoin_core_binary_dir"/bitcoin-qt 2>/dev/null &
-
-echo -e "\nThe bitcoin timechain is now synchronizing.\nThis may take a couple days to a couple weeks depending on the speed of your machine and connection.\nKeep your computer connected to power and internet. If you get disconnected or your computer hangs, rerun this script.\nSleep, suspend, and hibernate will be disabled to maximize the chances everything goes smoothly.\n\nPRESS ANY KEY TO DISABLE SLEEP, SUSPEND, and HIBERNATE."
-read -rn1 && echo # Comment this line out for testing and development purposes
-
-## Disable system sleep, suspend, hibernate, and hybrid-sleep through the system control tool
-sudo systemctl mask sleep.target suspend.target hibernate.target hybrid-sleep.target
-echo -e "System settings updated.\n\nPlease wait while Bitcoin Core initializes then begins syncing block headers.\nDo not close this terminal window."
+echo "Starting Bitcoin Core... "
+"$bitcoin_core_binary_dir"/bitcoin-qt 2>/dev/null & disown
 
 blockchain_info=$("$bitcoin_core_binary_dir"/bitcoin-cli getblockchaininfo 2>/dev/null)
 
@@ -134,6 +125,14 @@ while [[ -z $blockchain_info ]]; do
   
   blockchain_info=$("$bitcoin_core_binary_dir"/bitcoin-cli getblockchaininfo 2>/dev/null)
 done
+
+echo -e "\nThe bitcoin timechain is now synchronizing.\nThis may take a couple days to a couple weeks depending on the speed of your machine and connection.\nKeep your computer connected to power and internet. If you get disconnected or your computer hangs, rerun this script.\nSleep, suspend, and hibernate will be disabled to maximize the chances everything goes smoothly.\n\nPRESS ANY KEY TO DISABLE SLEEP, SUSPEND, and HIBERNATE."
+read -rn1 && echo # Comment this line out for testing and development purposes
+
+## Disable system sleep, suspend, hibernate, and hybrid-sleep through the system control tool
+sudo systemctl mask sleep.target suspend.target hibernate.target hybrid-sleep.target
+echo -e "System settings updated.\n\nPlease wait while Bitcoin Core initializes then begins syncing block headers.\nDo not close this terminal window."
+
 
 # Pull the initial block download status
 ibd_status=$(echo "$blockchain_info" | jq '.initialblockdownload')
