@@ -21,14 +21,19 @@ bitcoin_core_binary_dir="${bitcoin_core_extract_dir}/bin"
 sleep_time=10
 
 # Set services to automatically restart during dist-upgrade
-sudo sed -i 's/#$nrconf{restart} = '"'"'i'"'"';/$nrconf{restart} = '"'"'a'"'"';/g' /etc/needrestart/needrestart.conf
+if [ -f /etc/needrestart/needrestart.conf ]; then
+  sudo sed -i 's/#$nrconf{restart} = '"'"'i'"'"';/$nrconf{restart} = '"'"'a'"'"';/g' /etc/needrestart/needrestart.conf
+else
+  sudo mkdir -p /etc/needrestart/
+  echo "\$nrconf{restart} = 'a';" | sudo tee /etc/needrestart/needrestart.conf
+fi
 
 # Perform a full system upgrade (comparable to running Ubuntu System Updater)
 clear
 echo "Performing a full system upgrade... "
 sudo apt -qq update && sudo apt -qq dist-upgrade -y
 
-# Set flag to automatically restart services during dist-upgrade back to interactive mode.
+# Set automatical restart flag back to interactive mode.
 sudo sed -i 's/#$nrconf{restart} = '"'"'a'"'"';/$nrconf{restart} = '"'"'i'"'"';/g' /etc/needrestart/needrestart.conf
 
 # Install dependencies
