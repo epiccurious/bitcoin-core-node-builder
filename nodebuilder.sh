@@ -11,7 +11,7 @@ bitcoin_core_extract_dir="$HOME/bitcoin"
 bitcoin_core_binary_dir="$bitcoin_core_extract_dir/bin"
 
 # Amount of time to wait between calls to getblockchaininfo
-sleep_time=10
+sleep_time="10"
 
 # Pull the filename and download directory out of the url
 bitcoin_core_dir=$(dirname $bitcoin_core_url)
