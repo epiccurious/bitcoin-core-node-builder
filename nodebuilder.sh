@@ -17,8 +17,8 @@ gpg_good_signatures_required="7"
 bitcoin_core_extract_dir="${HOME}/bitcoin"
 bitcoin_core_binary_dir="${bitcoin_core_extract_dir}/bin"
 
-# Amount of time to wait between calls to getblockchaininfo
-sleep_time=10
+# The default amount of time to sleep
+sleep_time="10"
 
 # Set services to automatically restart during dist-upgrade
 if [ -f /etc/needrestart/needrestart.conf ]; then
@@ -38,7 +38,7 @@ sudo sed -i 's/#$nrconf{restart} = '"'"'a'"'"';/$nrconf{restart} = '"'"'i'"'"';/
 
 # Install dependencies
 echo "Checking dependencies... "
-sudo apt -qq install -y git gnupg jq libxcb-xinerama0 wget
+sudo apt -qq update && sudo apt -qq install -y git gnupg jq libxcb-xinerama0 wget
 
 # Download Bitcoin Core and the list of valid checksums
 echo -n "Downloading Bitcoin Core files... "
@@ -53,8 +53,8 @@ sha256_check=$(echo $(grep ${bitcoin_core_file} ${sha256_hash_file}) | sha256sum
 if [[ "${sha256_check}" == *"OK" ]]; then
   echo "ok."
 else
-  echo -e "INVALID. The download has failed.\nThis script cannot continue due to security concerns.\n\nPRESS ANY KEY TO EXIT."
-  read -rn1
+  echo -e "INVALID. The download has failed.\nThis script cannot continue due to security concerns.\n\nPRESS ANY KEY to exit."
+  read -rsn1
   exit 1
 fi
 
@@ -69,8 +69,8 @@ if [[ "${gpg_good_signature_count}" -ge "${gpg_good_signatures_required}" ]]; th
   rm "${gpg_signatures_file}"
   rm -rf guix.sigs/
 else
-  echo -e "INVALID. The download has failed.\nThis script cannot continue due to security concerns.\n\nPRESS ANY KEY TO EXIT."
-  read -rn1
+  echo -e "INVALID. The download has failed.\nThis script cannot continue due to security concerns.\n\nPRESS ANY KEY to exit."
+  read -rsn1
   exit 1
 fi
 
@@ -110,30 +110,25 @@ echo -n "  Setting default node behavior... "
 echo -e "server=1\nmempoolfullrbf=1" > "$HOME"/.bitcoin/bitcoin.conf
 echo "ok."
 
-echo "Starting Bitcoin Core... "
+echo -n "Starting Bitcoin Core... "
 "$bitcoin_core_binary_dir"/bitcoin-qt 2>/dev/null & disown
+blockchain_info=$("$bitcoin_core_binary_dir"/bitcoin-cli --rpcwait getblockchaininfo)
+echo "ok."
 
-blockchain_info=$("$bitcoin_core_binary_dir"/bitcoin-cli getblockchaininfo 2>/dev/null)
-
-while [[ -z $blockchain_info ]]; do
-  printf "Please wait while the system initializes."
-  
-  for (( i=1; i<=sleep_time; i++)); do
-    sleep 1
-    printf "."
-  done
-  echo
-  
-  blockchain_info=$("$bitcoin_core_binary_dir"/bitcoin-cli getblockchaininfo 2>/dev/null)
-done
-
-echo -e "\nThe bitcoin timechain is now synchronizing.\nThis may take a couple days to a couple weeks depending on the speed of your machine and connection.\nKeep your computer connected to power and internet. If you get disconnected or your computer hangs, rerun this script.\nSleep, suspend, and hibernate will be disabled to maximize the chances everything goes smoothly.\n\nPRESS ANY KEY TO DISABLE SLEEP, SUSPEND, and HIBERNATE."
-read -rn1 && echo # Comment this line out for testing and development purposes
+echo -e "\nBitcoin Core is now synchronizing the blockchain.\nThis process can take several weeks on slow systems.\nKeep your computer connected to stable power and internet.\nIf you need to restart, re-run Bitcoin Core from your desktop."
+echo -e "\nPRESS ANY KEY to disable sleep, suspend, and hibernate."
+read -rsn1
 
 ## Disable system sleep, suspend, hibernate, and hybrid-sleep through the system control tool
 sudo systemctl mask sleep.target suspend.target hibernate.target hybrid-sleep.target
-echo -e "System settings updated.\n\nPlease wait while Bitcoin Core initializes then begins syncing block headers.\nDo not close this terminal window."
+echo "System settings updated."
 
+echo -en "\nClose this Terminal window by clicking on the \"X\".\nThis screen will refresh in ${sleep_time} seconds."
+for (( i=1; i<=sleep_time; i++)); do
+  sleep 1
+  printf "."
+done
+echo
 
 # Pull the initial block download status
 ibd_status=$(echo "$blockchain_info" | jq '.initialblockdownload')
@@ -150,12 +145,12 @@ while [[ $ibd_status -eq "true" ]]; do
   [[ "$sync_progress" == *"e"* ]] && sync_progress="0.000000001"
   
   # Generate output string, clear the terminal, and print the output
-  sync_status="The sync progress:          $sync_progress\nThe number of blocks left:  $((headers-blocks))\nThe current chain tip:      $(date -d @"$last_block_time" | cut -c 5-)\n\nThe estimated size on disk: $((size_on_disk/1000/1000/1000))GB\nThe estimated free space:   $(df -h / | tail -1 | awk '{print $4}')B\n"
+  sync_status="Sync progress:          $sync_progress\nBlocks left to sync:    $((headers-blocks))\nCurrent chain tip:      $(date -d @"$last_block_time" | cut -c 5-)\n\nEstimated size on disk: $((size_on_disk/1000/1000/1000))GB\nEstimated free space:   $(df -h / | tail -1 | awk '{print $4}')B"
   clear
   echo -e "$sync_status"
   
   # Initiate sleep loop for "sleep_time" seconds
-  printf 'This screen will refresh in %s seconds.' "$sleep_time"
+  echo -en "\nClose this Terminal window by clicking on the \"X\".\nThis screen will refresh in ${sleep_time} seconds."
   for (( i=1; i<=sleep_time; i++)); do
     sleep 1
     printf "."
@@ -166,5 +161,6 @@ while [[ $ibd_status -eq "true" ]]; do
   ibd_status=$(echo "$blockchain_info" | jq '.initialblockdownload')
 done
 
-echo -e "This script has completed successfully.\n\nPRESS ANY KEY TO END THE SCRIPT."
-read -rn1
+echo -e "This script has completed successfully.\n\nPRESS ANY KEY to end the script."
+read -rsn1
+exit 0
