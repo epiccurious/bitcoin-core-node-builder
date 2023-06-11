@@ -2,7 +2,7 @@
 set -e
 
 # Set the URL to download Bitcoin Core, taken from https://bitcoincore.org/en/download/
-bitcoin_core_url="https://bitcoincore.org/bin/bitcoin-core-24.0.1/bitcoin-24.0.1-x86_64-linux-gnu.tar.gz"
+bitcoin_core_url="https://bitcoincore.org/bin/bitcoin-core-25.0/bitcoin-25.0-x86_64-linux-gnu.tar.gz"
 
 # Pull the filename and download directory out of the url
 bitcoin_core_download_dir=$(dirname $bitcoin_core_url)
