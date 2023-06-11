@@ -5,7 +5,7 @@ set -e
 bitcoin_core_url="https://bitcoincore.org/bin/bitcoin-core-24.0.1/bitcoin-24.0.1-x86_64-linux-gnu.tar.gz"
 
 # Pull the filename and download directory out of the url
-bitcoin_core_dir=$(dirname $bitcoin_core_url)
+bitcoin_core_download_dir=$(dirname $bitcoin_core_url)
 bitcoin_core_file=$(basename $bitcoin_core_url)
 
 # The filenames for the hash and signature
@@ -49,9 +49,9 @@ sudo apt -qq update && sudo apt -qq install -y git gnupg jq libxcb-xinerama0 wge
 
 # Download Bitcoin Core and the list of valid checksums
 echo -n "Downloading Bitcoin Core files... "
-[ -f "${bitcoin_core_file}" ] || wget -q "${bitcoin_core_dir}"/"${bitcoin_core_file}"
-[ -f "${sha256_hash_file}" ] || wget -q "${bitcoin_core_dir}"/"${sha256_hash_file}"
-[ -f "${gpg_signatures_file}" ] || wget -q "${bitcoin_core_dir}"/"${gpg_signatures_file}"
+[ -f "${bitcoin_core_file}" ] || wget -q "${bitcoin_core_download_dir}"/"${bitcoin_core_file}"
+[ -f "${sha256_hash_file}" ] || wget -q "${bitcoin_core_download_dir}"/"${sha256_hash_file}"
+[ -f "${gpg_signatures_file}" ] || wget -q "${bitcoin_core_download_dir}"/"${gpg_signatures_file}"
 echo "ok."
 
 # Check that the release file's checksum is listed in SHA256SUMS
