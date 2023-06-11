@@ -11,7 +11,7 @@ bitcoin_core_file=$(basename $bitcoin_core_url)
 # The filenames for the hash and signature
 sha256_hash_file="SHA256SUMS"
 gpg_signatures_file="SHA256SUMS.asc"
-gpg_signatures_required="3"
+gpg_good_signatures_required="7"
 
 # Name of the directory to extract into, without the trailing "/" (forward slash)
 bitcoin_core_extract_dir="${HOME}/bitcoin"
@@ -47,8 +47,8 @@ echo -n "Downloading Bitcoin Core files... "
 [ -f "${gpg_signatures_file}" ] || wget -q "${bitcoin_core_dir}"/"${gpg_signatures_file}"
 echo "ok."
 
-# Verify that the release file's checksum is listed in SHA256SUMS
-echo -n "  Verifying the download's file integrity... "
+# Check that the release file's checksum is listed in SHA256SUMS
+echo -n "  Validating the download's checksum... "
 sha256_check=$(echo $(grep ${bitcoin_core_file} ${sha256_hash_file}) | sha256sum --check 2>/dev/null)
 if [[ "${sha256_check}" == *"OK" ]]; then
   echo "ok."
@@ -58,13 +58,13 @@ else
   exit 1
 fi
 
-# Check signatures (THIS SECTION IS NOT COMPLETE)
-echo -n "  Verifying the download's signature... "
+# Check the PGP signatures of SHA256SUMS
+echo -n "  Validating the signatures of the checksum file... "
 [ -d guix.sigs/ ] || git clone --quiet https://github.com/bitcoin-core/guix.sigs.git
 gpg --quiet --import guix.sigs/builder-keys/*.gpg
 gpg_good_signature_count=$(gpg --verify "${gpg_signatures_file}"  2>&1 | grep "^gpg: Good signature from " | wc -l)
-if [[ "${gpg_good_signature_count}" -ge "${gpg_signatures_required}" ]]; then
-  echo "${gpg_good_signature_count} signatures."
+if [[ "${gpg_good_signature_count}" -ge "${gpg_good_signatures_required}" ]]; then
+  echo "${gpg_good_signature_count} good."
   rm "${sha256_hash_file}"
   rm "${gpg_signatures_file}"
   rm -rf guix.sigs/
