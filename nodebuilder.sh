@@ -60,13 +60,14 @@ fi
 
 # Check signatures (THIS SECTION IS NOT COMPLETE)
 echo -n "  Verifying the download's signature... "
-[ -d guix.sigs/ ] || git clone https://github.com/bitcoin-core/guix.sigs.git
+[ -d guix.sigs/ ] || git clone --quiet https://github.com/bitcoin-core/guix.sigs.git
 gpg --quiet --import guix.sigs/builder-keys/*.gpg
 gpg_good_signature_count=$(gpg --verify "${gpg_signatures_file}"  2>&1 | grep "^gpg: Good signature from " | wc -l)
 if [[ "${gpg_good_signature_count}" -ge "${gpg_signatures_required}" ]]; then
   echo "${gpg_good_signature_count} signatures."
   rm "${sha256_hash_file}"
   rm "${gpg_signatures_file}"
+  rm -rf guix.sigs/
 else
   echo -e "INVALID. The download has failed.\nThis script cannot continue due to security concerns.\n\nPRESS ANY KEY TO EXIT."
   read -rn1
