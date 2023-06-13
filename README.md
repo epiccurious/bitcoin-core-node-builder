@@ -4,6 +4,30 @@ Create a secure Bitcoin Core node with ease.
 
 NOTE: This code is still under development and not yet ready. Test at your own risk. You can track progress under the Minimum Viable Product milestone.
 
+## Prerequisites
+
+1. A fresh install of [Ubuntu Desktop LTS](https://ubuntu.com/tutorials/install-ubuntu-desktop) or any other modern Debian-based Linux distribution.
+2. An active internet connection
+
+This script **does not** support macOS, 32-bit systems, or Arm-based systems.
+
+## How to Start Bitcoin Core Node Builder
+
+NOTE: This code is still under development and not yet ready. Test at your own risk. You can track progress under the Minimum Viable Product milestone.
+
+1. Install git.
+    ```bash
+    sudo apt install -y git
+    ```
+2. Clone the repository.
+    ```bash
+    git clone https://github.com/epiccurious/bitcoin-core-node-builder.git
+    ```
+3. Run the script.
+    ```bash
+    bitcoin-core-node-builder/nodebuilder.sh
+    ```
+
 ## What Does This Script Do?
 
 The script performs the following actions:
@@ -27,25 +51,4 @@ The script modifies the following files:
 - `$HOME/.bitcoin/`, the default Bitcoin Core data directory
 - `$HOME/.bitcoin/bitcoin.conf`, the Bitcoin Core configuration file
 
-## Prerequisites
 
-A fresh install of [Ubuntu Desktop](https://ubuntu.com/tutorials/install-ubuntu-desktop) or other Debian-based Linux distribution with an internet connection enabled.
-
-This script **does not** support macOS, 32-bit systems, or Arm-based systems.
-
-## How to Start Bitcoin Core Node Builder
-
-NOTE: This code is still under development and not yet ready. Test at your own risk. You can track progress under the Minimum Viable Product milestone.
-
-1. Install git.
-    ```bash
-    sudo apt install -y git
-    ```
-2. Clone the repository.
-    ```bash
-    git clone https://github.com/epiccurious/bitcoin-core-node-builder.git
-    ```
-3. Run the script.
-    ```bash
-    bitcoin-core-node-builder/nodebuilder.sh
-    ```
