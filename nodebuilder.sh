@@ -140,7 +140,7 @@ echo
 # Pull the initial block download status
 ibd_status=$(echo "$blockchain_info" | jq '.initialblockdownload')
 
-while [[ $ibd_status -eq "true" ]]; do
+while [[ $ibd_status == "true" ]]; do
   # Parse blockchain info values
   blocks=$(echo "$blockchain_info" | jq '.blocks')
   headers=$(echo "$blockchain_info" | jq '.headers')
