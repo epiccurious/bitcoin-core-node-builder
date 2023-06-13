@@ -89,37 +89,36 @@ echo "ok."
 
 echo "Configuring Bitcoin Core... "
 echo -n "  Creating the desktop shortcut... "
-## Create a desktop shortcut for Bitcoin Core
-cp $(dirname $0)/bitcoin.png "$bitcoin_core_extract_dir"/
+## Create shortcut on the Desktop and in the "Show Applications" view
+desktop_path="${HOME}/Desktop"
+applications_path="${HOME}/.local/share/applications"
 shortcut_filename="bitcoin_core.desktop"
-## Create the desktop file
-touch "$HOME"/Desktop/"$shortcut_filename"
-cat << EOF > "$HOME"/Desktop/"$shortcut_filename"
+
+cp $(dirname $0)/bitcoin.png "${bitcoin_core_extract_dir}"/
+
+cat << EOF | tee "${applications_path}"/"${shortcut_filename}" > "${desktop_path}"/"${shortcut_filename}"
 [Desktop Entry]
 Name=Bitcoin Core
 Comment=Launch Bitcoin Core
-Exec=$HOME/bitcoin/bin/bitcoin-qt & disown
-Icon=$HOME/bitcoin/bitcoin.png
+Exec=${HOME}/bitcoin/bin/bitcoin-qt & disown
+Icon=${HOME}/bitcoin/bitcoin.png
 Terminal=false
 StartupWMClass=Bitcoin Core
 Type=Application
 Categories=Application;
 EOF
-## Make the shortcut user-executable
-chmod u+x "$HOME"/Desktop/"$shortcut_filename"
-## Make the shortcut trusted
-gio set "$HOME"/Desktop/"$shortcut_filename" "metadata::trusted" true
+## Make the shortcuts user-executable
+chmod u+x "${applications_path}"/"${shortcut_filename}"
+chmod u+x "${desktop_path}"/"${shortcut_filename}"
+## Make the desktop shortcut trusted
+gio set "${desktop_path}"/"${shortcut_filename}" "metadata::trusted" true
 echo "ok."
 
 # Configure the node
 echo -n "  Setting default node behavior... "
-[ -d "$HOME"/.bitcoin/ ] || mkdir "$HOME"/.bitcoin/
-echo -e "server=1\nmempoolfullrbf=1" > "$HOME"/.bitcoin/bitcoin.conf
 echo "ok."
 
 echo -n "Starting Bitcoin Core... "
-"$bitcoin_core_binary_dir"/bitcoin-qt 2>/dev/null & disown
-blockchain_info=$("$bitcoin_core_binary_dir"/bitcoin-cli --rpcwait getblockchaininfo)
 echo "ok."
 
 echo -e "\nBitcoin Core is now synchronizing the blockchain.\nThis process can take several weeks on slow systems.\nKeep your computer connected to stable power and internet.\nIf you need to restart, re-run Bitcoin Core from your desktop."
@@ -164,7 +163,7 @@ while [[ $ibd_status == "true" ]]; do
   done
   
   # Check for updated sync state
-  blockchain_info=$("$bitcoin_core_binary_dir"/bitcoin-cli getblockchaininfo)
+  blockchain_info=$("${bitcoin_core_binary_dir}"/bitcoin-cli getblockchaininfo)
   ibd_status=$(echo "$blockchain_info" | jq '.initialblockdownload')
 done
 
