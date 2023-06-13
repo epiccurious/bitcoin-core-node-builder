@@ -94,7 +94,7 @@ desktop_path="${HOME}/Desktop"
 applications_path="${HOME}/.local/share/applications"
 shortcut_filename="bitcoin_core.desktop"
 
-cp $(dirname $0)/bitcoin.png "${bitcoin_core_extract_dir}"/
+cp $(dirname $0)/img/bitcoin.png "${bitcoin_core_extract_dir}"/
 
 cat << EOF | tee "${applications_path}"/"${shortcut_filename}" > "${desktop_path}"/"${shortcut_filename}"
 [Desktop Entry]
