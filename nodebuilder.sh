@@ -116,9 +116,13 @@ echo "ok."
 
 # Configure the node
 echo -n "  Setting default node behavior... "
+[ -d "${HOME}"/.bitcoin/ ] || mkdir "${HOME}"/.bitcoin/
+echo -e "server=1\nmempoolfullrbf=1" > "${HOME}"/.bitcoin/bitcoin.conf
 echo "ok."
 
 echo -n "Starting Bitcoin Core... "
+"${bitcoin_core_binary_dir}"/bitcoin-qt 2>/dev/null & disown
+blockchain_info=$("${bitcoin_core_binary_dir}"/bitcoin-cli --rpcwait getblockchaininfo)
 echo "ok."
 
 echo -e "\nBitcoin Core is now synchronizing the blockchain.\nThis process can take several weeks on slow systems.\nKeep your computer connected to stable power and internet.\nIf you need to restart, re-run Bitcoin Core from your desktop."
