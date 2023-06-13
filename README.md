@@ -54,7 +54,8 @@ The script modifies the following files:
 ## Acknowledgements
 
 Inspriation for this project came from:
-- [@402PaymentReq](https://twitter.com/402PaymentReq) for creating the video [Bitcoin & Lightning Server](https://www.youtube.com/watch?v=_Hrnls92TxQ)
-- [@StopAndDecrypt](https://twitter.com/StopAndDecrypt) for creating the guide [Running Bitcoin & Lightning Nodes](https://stopanddecrypt.medium.com/running-bitcoin-lightning-nodes-over-the-tor-network-2021-edition-489180297d5)
+- [402 Payment Required](https://twitter.com/402PaymentReq)'s video [Bitcoin & Lightning Server](https://www.youtube.com/watch?v=_Hrnls92TxQ)
+- [Addy Yeow](https://github.com/ayeowch/)'s FOSS script [install-full-node.sh](https://bitnodes.io/install-full-node.sh)
+- [StopAndDecrypt](https://twitter.com/StopAndDecrypt)'s guide [Running Bitcoin & Lightning Nodes](https://stopanddecrypt.medium.com/running-bitcoin-lightning-nodes-over-the-tor-network-2021-edition-489180297d5)
 - [Bitcoin Core FOSS contributors](https://github.com/bitcoin/bitcoin/graphs/contributors)
 - [Yeti Wallet FOSS contributors](https://github.com/JWWeatherman/yeticold/graphs/contributors)
