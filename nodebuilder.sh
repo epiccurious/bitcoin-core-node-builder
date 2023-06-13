@@ -167,7 +167,7 @@ while [[ $ibd_status == "true" ]]; do
   done
   
   # Check for updated sync state
-  blockchain_info=$("${bitcoin_core_binary_dir}"/bitcoin-cli getblockchaininfo)
+  blockchain_info=$("${bitcoin_core_binary_dir}"/bitcoin-cli --rpcwait getblockchaininfo)
   ibd_status=$(echo "$blockchain_info" | jq '.initialblockdownload')
 done
 
