@@ -120,20 +120,20 @@ free_space_in_mb=$((free_space_in_kb/1000))
 echo "Found $((free_space_in_mb/1000)) GB of free space in ${HOME}."
 
 ## This constant will need to be adjusted over time as the chain grows
+## or need to find how to generate this dynamically in a trustless way.
 archival_node_minimum_in_mb="600*1000"
 ## The lower this number is, the more likely disk space errors during IBD
 ## The higher this number is, the more nodes prune.
-## The sweet spot is about 100GB more than
-## Need to find how to generate this dynamically in a trustless way.
+## The sweet spot is about xxx GB more than the current blocks/ + chainstate/.
 
 if [ ${free_space_in_mb} -ge ${archival_node_minimum_in_mb} ]; then
   echo "  Your node will run as a full node (not pruned)."
-elif [ ${free_space_in_mb} -lt $((5*1000)) ]; then
+elif [ ${free_space_in_mb} -lt $((archival_node_minimum_in_mb/120)) ]; then
   echo -e "  You are critically low on disk space.\nExiting..."
   exit 1
-elif [ ${free_space_in_mb} -lt $((15*1000)) ]; then
+elif [ ${free_space_in_mb} -lt $((archival_node_minimum_in_mb/40)) ]; then
   echo "  Low on disk space. Setting the minimum 0.55 GB prune."
-  echo -e "prune=500\nblocksonly=1" >> "${HOME}"/.bitcoin/bitcoin.conf
+  echo -e "prune=550\nblocksonly=1" >> "${HOME}"/.bitcoin/bitcoin.conf
 else
   echo "  You do not have sufficient space without pruning."
   if [ ${free_space_in_mb} -lt $((archival_node_minimum_in_mb/12)) ]; then
@@ -145,7 +145,7 @@ else
   else
     prune_ratio=80
   fi
-  prune_amount_in_mb=$((pruneBitcoin Core cannot run_ratio*free_space_in_mb/100))
+  prune_amount_in_mb=$((prune_ratio*free_space_in_mb/100))
   echo -e "  Pruning to $((prune_amount_in_mb/1000)) GB (${prune_ratio}% of your free space).\n  You can change this in ${HOME}/.bitcoin/bitcoin.conf."
   echo "prune=${prune_amount_in_mb}" >> "${HOME}"/.bitcoin/bitcoin.conf
 fi
