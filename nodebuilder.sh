@@ -119,7 +119,14 @@ free_space_in_kb=$(df --output=avail "${HOME}" | sed 1d)
 free_space_in_mb=$((free_space_in_kb/1000))
 echo "Found $((free_space_in_mb/1000)) GB of free space in ${HOME}."
 
-if [ ${free_space_in_mb} -ge $((650*1000)) ]; then
+## This constant will need to be adjusted over time as the chain grows
+archival_node_minimum_in_mb="600*1000"
+## The lower this number is, the more likely disk space errors during IBD
+## The higher this number is, the more nodes prune.
+## The sweet spot is about 100GB more than
+## Need to find how to generate this dynamically in a trustless way.
+
+if [ ${free_space_in_mb} -ge ${archival_node_minimum_in_mb} ]; then
   echo "  Your node will run as a full node (not pruned)."
 elif [ ${free_space_in_mb} -lt $((5*1000)) ]; then
   echo -e "  You are critically low on disk space.\nExiting..."
@@ -129,11 +136,11 @@ elif [ ${free_space_in_mb} -lt $((15*1000)) ]; then
   echo -e "prune=500\nblocksonly=1" >> "${HOME}"/.bitcoin/bitcoin.conf
 else
   echo "  You do not have sufficient space without pruning."
-  if [ ${free_space_in_mb} -lt $((50*1000)) ]; then
+  if [ ${free_space_in_mb} -lt $((archival_node_minimum_in_mb/12)) ]; then
     prune_ratio=20
-  elif [ ${free_space_in_mb} -lt $((150*1000)) ]; then
+  elif [ ${free_space_in_mb} -lt $((archival_node_minimum_in_mb/4)) ]; then
     prune_ratio=40
-  elif [ ${free_space_in_mb} -lt $((450*1000)) ]; then
+  elif [ ${free_space_in_mb} -lt $((3*archival_node_minimum_in_mb/4)) ]; then
     prune_ratio=60
   else
     prune_ratio=80
