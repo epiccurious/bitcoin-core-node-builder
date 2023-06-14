@@ -115,39 +115,39 @@ echo -n "Setting the default node behavior... "
 echo -e "server=1\nmempoolfullrbf=1" > "${HOME}"/.bitcoin/bitcoin.conf
 echo "ok."
 
-free_space_in_kb=$(df --output=avail "${HOME}" | sed 1d)
-free_space_in_mb=$((free_space_in_kb/1000))
-echo "Found $((free_space_in_mb/1000)) GB of free space in ${HOME}."
+free_space_in_bytes=$(df --block-size=1 --output=avail "${HOME}" | sed 1d)
+free_space_in_mib=$((free_space_in_kb/1024/1024))
+echo "Found $((free_space_in_mib/1024)) GiB of free space in ${HOME}."
 
 ## This constant will need to be adjusted over time as the chain grows
 ## or need to find how to generate this dynamically in a trustless way.
-archival_node_minimum_in_mb="600*1000"
+archival_node_minimum_in_mib="600*1024"
 ## The lower this number is, the more likely disk space errors during IBD
 ## The higher this number is, the more nodes prune.
 ## The sweet spot is about xxx GB more than the current blocks/ + chainstate/.
 
-if [ ${free_space_in_mb} -ge ${archival_node_minimum_in_mb} ]; then
+if [ ${free_space_in_mib} -ge ${archival_node_minimum_in_mib} ]; then
   echo "  Your node will run as a full node (not pruned)."
-elif [ ${free_space_in_mb} -lt $((archival_node_minimum_in_mb/120)) ]; then
+elif [ ${free_space_in_mib} -lt $((archival_node_minimum_in_mib/120)) ]; then
   echo -e "  You are critically low on disk space.\nExiting..."
   exit 1
-elif [ ${free_space_in_mb} -lt $((archival_node_minimum_in_mb/40)) ]; then
-  echo "  Low on disk space. Setting the minimum 0.55 GB prune."
+elif [ ${free_space_in_mib} -lt $((archival_node_minimum_in_mib/40)) ]; then
+  echo "  Low on disk space. Setting the minimum 0.55 GiB prune."
   echo -e "prune=550\nblocksonly=1" >> "${HOME}"/.bitcoin/bitcoin.conf
 else
   echo "  You do not have sufficient space without pruning."
-  if [ ${free_space_in_mb} -lt $((archival_node_minimum_in_mb/12)) ]; then
+  if [ ${free_space_in_mib} -lt $((archival_node_minimum_in_mib/12)) ]; then
     prune_ratio=20
-  elif [ ${free_space_in_mb} -lt $((archival_node_minimum_in_mb/4)) ]; then
+  elif [ ${free_space_in_mib} -lt $((archival_node_minimum_in_mib/4)) ]; then
     prune_ratio=40
-  elif [ ${free_space_in_mb} -lt $((3*archival_node_minimum_in_mb/4)) ]; then
+  elif [ ${free_space_in_mib} -lt $((3*archival_node_minimum_in_mib/4)) ]; then
     prune_ratio=60
   else
     prune_ratio=80
   fi
-  prune_amount_in_mb=$((prune_ratio*free_space_in_mb/100))
-  echo -e "  Pruning to $((prune_amount_in_mb/1000)) GB (${prune_ratio}% of your free space).\n  You can change this in ${HOME}/.bitcoin/bitcoin.conf."
-  echo "prune=${prune_amount_in_mb}" >> "${HOME}"/.bitcoin/bitcoin.conf
+  prune_amount_in_mib=$((prune_ratio*free_space_in_mib/100))
+  echo -e "  Pruning to $((prune_amount_in_mib/1024)) GiB (${prune_ratio}% of your free space).\n  You can change this in ${HOME}/.bitcoin/bitcoin.conf."
+  echo "prune=${prune_amount_in_mib}" >> "${HOME}"/.bitcoin/bitcoin.conf
 fi
 
 echo -n "Starting Bitcoin Core... "
@@ -187,7 +187,7 @@ while [[ $ibd_status == "true" ]]; do
   [[ "$sync_progress" == *"e"* ]] && sync_progress="0.000000001"
   
   # Generate output string, clear the terminal, and print the output
-  sync_status="Sync progress:          ${sync_progress}\nBlocks left to sync:    $((headers-blocks))\nCurrent chain tip:      $(date -d @"${last_block_time}" | cut -c 5-)\n\nEstimated size on disk: $((size_on_disk/1000/1000/1000))GB\nEstimated free space:   $(df -h / | tail -1 | awk '{print $4}')B"
+  sync_status="Sync progress:          ${sync_progress}\nBlocks left to sync:    $((headers-blocks))\nCurrent chain tip:      $(date -d @"${last_block_time}" | cut -c 5-)\n\nEstimated size on disk: $((size_on_disk/1024/1024/1024)) GiB\nEstimated free space:   $(df -h / | tail -1 | awk '{print $4}')B"
   clear
   echo -e "${sync_status}"
   
