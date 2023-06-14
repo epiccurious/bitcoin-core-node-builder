@@ -43,11 +43,9 @@ sudo apt -qq update && sudo apt -qq dist-upgrade -y
 # Set automatical restart flag back to interactive mode.
 sudo sed -i 's/#$nrconf{restart} = '"'"'a'"'"';/$nrconf{restart} = '"'"'i'"'"';/g' /etc/needrestart/needrestart.conf
 
-# Install dependencies
 echo "Checking dependencies... "
 sudo apt -qq update && sudo apt -qq install -y git gnupg jq libxcb-xinerama0 wget
 
-# Download Bitcoin Core and the list of valid checksums
 echo -n "Downloading Bitcoin Core files... "
 [ -f "${bitcoin_core_file}" ] || wget -q "${bitcoin_core_download_dir}"/"${bitcoin_core_file}"
 [ -f "${sha256_hash_file}" ] || wget -q "${bitcoin_core_download_dir}"/"${sha256_hash_file}"
@@ -56,7 +54,7 @@ echo "ok."
 
 # Check that the release file's checksum is listed in SHA256SUMS
 echo -n "  Validating the download's checksum... "
-sha256_check=$(echo $(grep ${bitcoin_core_file} ${sha256_hash_file}) | sha256sum --check 2>/dev/null)
+sha256_check=$(echo $(grep "${bitcoin_core_file}" "${sha256_hash_file}") | sha256sum --check 2>/dev/null)
 if [[ "${sha256_check}" == *"OK" ]]; then
   echo "ok."
 else
@@ -81,7 +79,6 @@ else
   exit 1
 fi
 
-# Extract Bitcoin Core
 echo -n "Extracting Bitcoin Core... "
 [ -d "${bitcoin_core_extract_dir}" ] || mkdir "${bitcoin_core_extract_dir}"/
 tar -xzf "${bitcoin_core_file}" -C "${bitcoin_core_extract_dir}"/ --strip-components=1
