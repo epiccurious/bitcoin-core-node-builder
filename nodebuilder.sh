@@ -20,13 +20,6 @@ bitcoin_core_binary_dir="${bitcoin_core_extract_dir}/bin"
 # The default amount of time to sleep
 sleep_time="10"
 
-# Name of the directory to extract into, without the trailing "/" (forward slash)
-bitcoin_core_extract_dir="${HOME}/bitcoin"
-bitcoin_core_binary_dir="${bitcoin_core_extract_dir}/bin"
-
-# The default amount of time to sleep
-sleep_time="10"
-
 # Set services to automatically restart during dist-upgrade
 if [ -f /etc/needrestart/needrestart.conf ]; then
   sudo sed -i 's/#$nrconf{restart} = '"'"'i'"'"';/$nrconf{restart} = '"'"'a'"'"';/g' /etc/needrestart/needrestart.conf
