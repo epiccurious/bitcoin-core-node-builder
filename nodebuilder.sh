@@ -115,9 +115,10 @@ echo -n "Setting the default node behavior... "
 echo -e "server=1\nmempoolfullrbf=1" > "${HOME}"/.bitcoin/bitcoin.conf
 echo "ok."
 
+echo -n "Checking free space in ${HOME}... "
 free_space_in_bytes=$(df --block-size=1 --output=avail "${HOME}" | sed 1d)
 free_space_in_mib="$((free_space_in_bytes/1024/1024))"
-echo "Found $((free_space_in_mib/1024)) GiB of free space in ${HOME}."
+echo "$((free_space_in_mib/1024)) GiB."
 
 ## This constant will need to be adjusted over time as the chain grows
 ## or need to find how to generate this dynamically in a trustless way.
@@ -127,15 +128,15 @@ archival_node_minimum_in_mib="$((600*1024))"
 ## The sweet spot is about xxx GB more than the current blocks/ + chainstate/.
 
 if [ ${free_space_in_mib} -ge ${archival_node_minimum_in_mib} ]; then
-  echo "  Your node will run as a full node (not pruned)."
+  echo "  Your node will run as an unpruned full node."
 elif [ ${free_space_in_mib} -lt $((archival_node_minimum_in_mib/120)) ]; then
   echo -e "  You are critically low on disk space.\nExiting..."
   exit 1
 elif [ ${free_space_in_mib} -lt $((archival_node_minimum_in_mib/40)) ]; then
-  echo "  Low on disk space. Setting the minimum 0.55 GiB prune."
+  echo -e "  Your disk space is low.\n  Setting the minimum 0.55GiB prune.\n  Enabling blocks-only mode."
   echo -e "prune=550\nblocksonly=1" >> "${HOME}"/.bitcoin/bitcoin.conf
 else
-  echo "  You do not have sufficient space without pruning."
+  echo "  You have insufficient free space to run unpruned."
   if [ ${free_space_in_mib} -lt $((archival_node_minimum_in_mib/12)) ]; then
     prune_ratio=20
   elif [ ${free_space_in_mib} -lt $((archival_node_minimum_in_mib/4)) ]; then
@@ -146,7 +147,7 @@ else
     prune_ratio=80
   fi
   prune_amount_in_mib=$((prune_ratio*free_space_in_mib/100))
-  echo -e "  Pruning to $((prune_amount_in_mib/1024)) GiB (${prune_ratio}% of your free space).\n  You can change this in ${HOME}/.bitcoin/bitcoin.conf."
+  echo -e "  Pruning to $((prune_amount_in_mib/1024)) GiB (${prune_ratio}% of the free space).\n  You can change this in ${HOME}/.bitcoin/bitcoin.conf."
   echo "prune=${prune_amount_in_mib}" >> "${HOME}"/.bitcoin/bitcoin.conf
 fi
 
