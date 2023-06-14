@@ -66,7 +66,7 @@ else
 fi
 
 # Check the PGP signatures of SHA256SUMS
-echo -n "  Validating the signatures of the checksum file... "
+echo -n "  Validating the checksum signatures... "
 [ -d guix.sigs/ ] || git clone --quiet https://github.com/bitcoin-core/guix.sigs.git
 gpg --quiet --import guix.sigs/builder-keys/*.gpg
 gpg_good_signature_count=$(gpg --verify "${gpg_signatures_file}"  2>&1 | grep "^gpg: Good signature from " | wc -l)
@@ -155,9 +155,10 @@ echo -e "\nBitcoin Core is now synchronizing the blockchain.\nThis process can t
 echo -e "\nPRESS ANY KEY to disable sleep, suspend, and hibernate."
 read -rsn1
 
+echo -n "Updating system settings... "
 ## Disable system sleep, suspend, hibernate, and hybrid-sleep through the system control tool
 sudo systemctl mask sleep.target suspend.target hibernate.target hybrid-sleep.target
-echo "System settings updated."
+echo "ok."
 
 echo -en "\nClose this Terminal window by clicking on the \"X\".\nThis screen will refresh in ${sleep_time} seconds."
 for (( i=1; i<=sleep_time; i++)); do
