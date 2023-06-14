@@ -122,7 +122,7 @@ echo "ok."
 
 echo -n "Starting Bitcoin Core... "
 "${bitcoin_core_binary_dir}"/bitcoin-qt 2>/dev/null & disown
-blockchain_info=$("${bitcoin_core_binary_dir}"/bitcoin-cli --rpcwait getblockchaininfo)
+"${bitcoin_core_binary_dir}"/bitcoin-cli --rpcwait getrpcinfo > /dev/null
 echo "ok."
 
 echo -e "\nBitcoin Core is now synchronizing the blockchain.\nThis process can take several weeks on slow systems.\nKeep your computer connected to stable power and internet.\nIf you need to restart, re-run Bitcoin Core from your desktop."
@@ -141,6 +141,7 @@ done
 echo
 
 # Pull the initial block download status
+blockchain_info=$("${bitcoin_core_binary_dir}"/bitcoin-cli --rpcwait getblockchaininfo)
 ibd_status=$(echo "${blockchain_info}" | jq '.initialblockdownload')
 
 while [[ $ibd_status == "true" ]]; do
