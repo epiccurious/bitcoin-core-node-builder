@@ -116,12 +116,12 @@ echo -e "server=1\nmempoolfullrbf=1" > "${HOME}"/.bitcoin/bitcoin.conf
 echo "ok."
 
 free_space_in_bytes=$(df --block-size=1 --output=avail "${HOME}" | sed 1d)
-free_space_in_mib=$((free_space_in_kb/1024/1024))
+free_space_in_mib="$((free_space_in_bytes/1024/1024))"
 echo "Found $((free_space_in_mib/1024)) GiB of free space in ${HOME}."
 
 ## This constant will need to be adjusted over time as the chain grows
 ## or need to find how to generate this dynamically in a trustless way.
-archival_node_minimum_in_mib="600*1024"
+archival_node_minimum_in_mib="$((600*1024))"
 ## The lower this number is, the more likely disk space errors during IBD
 ## The higher this number is, the more nodes prune.
 ## The sweet spot is about xxx GB more than the current blocks/ + chainstate/.
