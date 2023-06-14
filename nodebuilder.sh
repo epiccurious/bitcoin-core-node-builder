@@ -87,8 +87,7 @@ echo -n "Extracting Bitcoin Core... "
 tar -xzf "${bitcoin_core_file}" -C "${bitcoin_core_extract_dir}"/ --strip-components=1
 echo "ok."
 
-echo "Configuring Bitcoin Core... "
-echo -n "  Creating the desktop shortcut... "
+echo -n "Creating Desktop and Applications shortcuts... "
 ## Create shortcut on the Desktop and in the "Show Applications" view
 desktop_path="${HOME}/Desktop"
 applications_path="${HOME}/.local/share/applications"
@@ -114,11 +113,38 @@ chmod u+x "${desktop_path}"/"${shortcut_filename}"
 gio set "${desktop_path}"/"${shortcut_filename}" "metadata::trusted" true
 echo "ok."
 
-# Configure the node
-echo -n "  Setting default node behavior... "
+echo -n "Setting the default node behavior... "
 [ -d "${HOME}"/.bitcoin/ ] || mkdir "${HOME}"/.bitcoin/
 echo -e "server=1\nmempoolfullrbf=1" > "${HOME}"/.bitcoin/bitcoin.conf
 echo "ok."
+
+free_space_in_kb=$(df --output=avail "${HOME}" | sed 1d)
+free_space_in_mb=$((free_space_in_kb/1000))
+echo "Found $((free_space_in_mb/1000)) GB of free space in ${HOME}."
+
+if [ ${free_space_in_mb} -ge $((650*1000)) ]; then
+  echo "  Your node will run as a full node (not pruned)."
+elif [ ${free_space_in_mb} -lt $((5*1000)) ]; then
+  echo -e "  You are critically low on disk space.\nExiting..."
+  exit 1
+elif [ ${free_space_in_mb} -lt $((15*1000)) ]; then
+  echo "  Low on disk space. Setting the minimum 0.55 GB prune."
+  echo -e "prune=500\nblocksonly=1" >> "${HOME}"/.bitcoin/bitcoin.conf
+else
+  echo "  You do not have sufficient space without pruning."
+  if [ ${free_space_in_mb} -lt $((50*1000)) ]; then
+    prune_ratio=20
+  elif [ ${free_space_in_mb} -lt $((150*1000)) ]; then
+    prune_ratio=40
+  elif [ ${free_space_in_mb} -lt $((450*1000)) ]; then
+    prune_ratio=60
+  else
+    prune_ratio=80
+  fi
+  prune_amount_in_mb=$((pruneBitcoin Core cannot run_ratio*free_space_in_mb/100))
+  echo -e "  Pruning to $((prune_amount_in_mb/1000)) GB (${prune_ratio}% of your free space).\n  You can change this in ${HOME}/.bitcoin/bitcoin.conf."
+  echo "prune=${prune_amount_in_mb}" >> "${HOME}"/.bitcoin/bitcoin.conf
+fi
 
 echo -n "Starting Bitcoin Core... "
 "${bitcoin_core_binary_dir}"/bitcoin-qt 2>/dev/null & disown
