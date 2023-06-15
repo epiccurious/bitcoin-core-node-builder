@@ -70,6 +70,7 @@ if [[ "${sha256_check}" == *"OK" ]]; then
 else
   echo -e "INVALID. The download has failed.\nThis script cannot continue due to security concerns.\n\nPRESS ANY KEY to exit."
   read -rsn1
+  >&2 echo "Exiting due to failed checksum validation."
   exit 1
 fi
 
@@ -87,6 +88,7 @@ if [[ "${gpg_good_signature_count}" -ge "${gpg_good_signatures_required}" ]]; th
 else
   echo -e "INVALID. The download has failed.\nThis script cannot continue due to security concerns.\n\nPRESS ANY KEY to exit."
   read -rsn1
+  >&2 echo "Exiting due to failed signature validation."
   exit 1
 fi
 
