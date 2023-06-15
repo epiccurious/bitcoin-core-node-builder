@@ -44,8 +44,9 @@ sudo apt -qq update && sudo apt -qq dist-upgrade -y
 sudo sed -i 's/#$nrconf{restart} = '"'"'a'"'"';/$nrconf{restart} = '"'"'i'"'"';/g' /etc/needrestart/needrestart.conf
 
 if [ -f /var/run/reboot-required ]; then
-  echo -e "Your system must be rebooted to apply upgrades.\nPRESS ANY KEY to reboot."
+  echo -e "Your system must be rebooted to upgrade the following:\n$(cat /var/run/reboot-required.pkgs)\n\nPRESS ANY KEY to reboot."
   read -rsn1
+  echo "Rebooting."
   reboot
   exit 0
 fi
