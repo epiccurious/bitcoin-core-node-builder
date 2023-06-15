@@ -166,6 +166,7 @@ while [[ $ibd_status == "true" ]]; do
     sleep 1
     printf "."
   done
+  echo
   
   # Check for updated sync state
   blockchain_info=$("${bitcoin_core_binary_dir}"/bitcoin-cli --rpcwait getblockchaininfo)
