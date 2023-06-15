@@ -43,6 +43,13 @@ sudo apt -qq update && sudo apt -qq dist-upgrade -y
 # Set automatical restart flag back to interactive mode.
 sudo sed -i 's/#$nrconf{restart} = '"'"'a'"'"';/$nrconf{restart} = '"'"'i'"'"';/g' /etc/needrestart/needrestart.conf
 
+if [ -f /var/run/reboot-required ]; then
+  echo -e "Your system must be rebooted to apply upgrades.\nPRESS ANY KEY to reboot."
+  read -rsn1
+  reboot
+  exit 0
+fi
+
 # Install dependencies
 echo "Checking dependencies... "
 sudo apt -qq update && sudo apt -qq install -y git gnupg jq libxcb-xinerama0 wget
@@ -167,7 +174,7 @@ while [[ $ibd_status == "true" ]]; do
     printf "."
   done
   echo
-  
+
   # Check for updated sync state
   blockchain_info=$("${bitcoin_core_binary_dir}"/bitcoin-cli --rpcwait getblockchaininfo)
   ibd_status=$(echo "${blockchain_info}" | jq '.initialblockdownload')
