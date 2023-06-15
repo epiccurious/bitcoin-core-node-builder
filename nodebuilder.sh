@@ -77,6 +77,7 @@ fi
 echo -n "  Validating the signatures of the checksum file... "
 [ -d guix.sigs/ ] || git clone --quiet https://github.com/bitcoin-core/guix.sigs.git
 gpg --quiet --import guix.sigs/builder-keys/*.gpg
+gpg --quiet --import "${HOME}"/guix.sigs/builder-keys/*.gpg
 gpg_good_signature_count=$(gpg --verify "${gpg_signatures_file}"  2>&1 | grep "^gpg: Good signature from " | wc -l)
 if [[ "${gpg_good_signature_count}" -ge "${gpg_good_signatures_required}" ]]; then
   echo "${gpg_good_signature_count} good."
@@ -148,7 +149,7 @@ echo
 blockchain_info=$("${bitcoin_core_binary_dir}"/bitcoin-cli --rpcwait getblockchaininfo)
 ibd_status=$(echo "${blockchain_info}" | jq '.initialblockdownload')
 
-while [[ $ibd_status == "true" ]]; do
+while [[ "${ibd_status}" == "true" ]]; do
   # Parse blockchain info values
   blocks=$(echo "${blockchain_info}" | jq '.blocks')
   headers=$(echo "${blockchain_info}" | jq '.headers')
@@ -157,7 +158,7 @@ while [[ $ibd_status == "true" ]]; do
   size_on_disk=$(echo "${blockchain_info}" | jq '.size_on_disk')
   
   # Handle case of early sync by replacing any e-9 with 10^-9
-  [[ "$sync_progress" == *"e"* ]] && sync_progress="0.000000001"
+  [[ "${sync_progress}" == *"e"* ]] && sync_progress="0.000000001"
   
   # Generate output string, clear the terminal, and print the output
   sync_status="Sync progress:          ${sync_progress}\nBlocks left to sync:    $((headers-blocks))\nCurrent chain tip:      $(date -d @"${last_block_time}" | cut -c 5-)\n\nEstimated size on disk: $((size_on_disk/1000/1000/1000))GB\nEstimated free space:   $(df -h / | tail -1 | awk '{print $4}')B"
