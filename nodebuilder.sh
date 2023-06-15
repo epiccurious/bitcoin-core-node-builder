@@ -173,6 +173,5 @@ while [[ $ibd_status == "true" ]]; do
   ibd_status=$(echo "${blockchain_info}" | jq '.initialblockdownload')
 done
 
-echo -e "This script has completed successfully.\n\nPRESS ANY KEY to end the script."
-read -rsn1
+echo -e "This script has completed successfully.\nExiting."
 exit 0
