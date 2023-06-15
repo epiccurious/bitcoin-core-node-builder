@@ -40,7 +40,7 @@ clear
 echo "Performing a full system upgrade... "
 sudo apt -qq update && sudo apt -qq dist-upgrade -y
 
-# Set automatical restart flag back to interactive mode.
+# Set services restart flag back to interactive mode.
 sudo sed -i 's/#$nrconf{restart} = '"'"'a'"'"';/$nrconf{restart} = '"'"'i'"'"';/g' /etc/needrestart/needrestart.conf
 
 if [ -f /var/run/reboot-required ]; then
@@ -89,7 +89,6 @@ else
   exit 1
 fi
 
-# Extract Bitcoin Core
 echo -n "Extracting Bitcoin Core... "
 [ -d "${bitcoin_core_extract_dir}" ] || mkdir "${bitcoin_core_extract_dir}"/
 tar -xzf "${bitcoin_core_file}" -C "${bitcoin_core_extract_dir}"/ --strip-components=1
@@ -97,13 +96,13 @@ echo "ok."
 
 echo "Configuring Bitcoin Core... "
 echo -n "  Creating the desktop shortcut... "
-## Create shortcut on the Desktop and in the "Show Applications" view
 desktop_path="${HOME}/Desktop"
 applications_path="${HOME}/.local/share/applications"
 shortcut_filename="bitcoin_core.desktop"
 
 cp $(dirname $0)/img/bitcoin.png "${bitcoin_core_extract_dir}"/
 
+## Create .desktop on the user's Desktop and "Show Applications" directories
 cat << EOF | tee "${applications_path}"/"${shortcut_filename}" > "${desktop_path}"/"${shortcut_filename}"
 [Desktop Entry]
 Name=Bitcoin Core
@@ -122,7 +121,6 @@ chmod u+x "${desktop_path}"/"${shortcut_filename}"
 gio set "${desktop_path}"/"${shortcut_filename}" "metadata::trusted" true
 echo "ok."
 
-# Configure the node
 echo -n "  Setting default node behavior... "
 [ -d "${HOME}"/.bitcoin/ ] || mkdir "${HOME}"/.bitcoin/
 echo -e "server=1\nmempoolfullrbf=1" > "${HOME}"/.bitcoin/bitcoin.conf
@@ -137,7 +135,6 @@ echo -e "\nBitcoin Core is now synchronizing the blockchain.\nThis process can t
 echo -e "\nPRESS ANY KEY to disable sleep, suspend, and hibernate."
 read -rsn1
 
-## Disable system sleep, suspend, hibernate, and hybrid-sleep through the system control tool
 sudo systemctl mask sleep.target suspend.target hibernate.target hybrid-sleep.target
 echo "System settings updated."
 
@@ -148,7 +145,6 @@ for (( i=1; i<=sleep_time; i++)); do
 done
 echo
 
-# Pull the initial block download status
 blockchain_info=$("${bitcoin_core_binary_dir}"/bitcoin-cli --rpcwait getblockchaininfo)
 ibd_status=$(echo "${blockchain_info}" | jq '.initialblockdownload')
 
