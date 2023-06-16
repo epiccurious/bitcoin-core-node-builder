@@ -41,8 +41,16 @@ clear
 echo "Performing a full system upgrade... "
 sudo apt -qq update && sudo apt -qq dist-upgrade -y
 
-# Set automatical restart flag back to interactive mode.
+# Set services restart flag back to interactive mode.
 sudo sed -i 's/#$nrconf{restart} = '"'"'a'"'"';/$nrconf{restart} = '"'"'i'"'"';/g' /etc/needrestart/needrestart.conf
+
+if [ -f /var/run/reboot-required ]; then
+  echo -e "\nREBOOT REQUIRED to upgrade the following:\n$(cat /var/run/reboot-required.pkgs)\n\nPRESS ANY KEY to reboot or Ctrl+C to exit."
+  read -rsn1
+  echo "Rebooting."
+  reboot
+  exit 0
+fi
 
 # Install dependencies
 echo "Checking dependencies... "
@@ -63,6 +71,7 @@ if [[ "${sha256_check}" == *"OK" ]]; then
 else
   echo -e "INVALID. The download has failed.\nThis script cannot continue due to security concerns.\n\nPRESS ANY KEY to exit."
   read -rsn1
+  >&2 echo "Exiting due to failed checksum validation."
   exit 1
 fi
 
@@ -79,10 +88,10 @@ if [[ "${gpg_good_signature_count}" -ge "${gpg_good_signatures_required}" ]]; th
 else
   echo -e "INVALID. The download has failed.\nThis script cannot continue due to security concerns.\n\nPRESS ANY KEY to exit."
   read -rsn1
+  >&2 echo "Exiting due to failed signature validation."
   exit 1
 fi
 
-# Extract Bitcoin Core
 echo -n "Extracting Bitcoin Core... "
 [ -d "${bitcoin_core_extract_dir}" ] || mkdir "${bitcoin_core_extract_dir}"/
 tar -xzf "${bitcoin_core_file}" -C "${bitcoin_core_extract_dir}"/ --strip-components=1
@@ -90,13 +99,13 @@ echo "ok."
 
 echo "Configuring Bitcoin Core... "
 echo -n "  Creating the desktop shortcut... "
-## Create shortcut on the Desktop and in the "Show Applications" view
 desktop_path="${HOME}/Desktop"
 applications_path="${HOME}/.local/share/applications"
 shortcut_filename="bitcoin_core.desktop"
 
 cp $(dirname $0)/img/bitcoin.png "${bitcoin_core_extract_dir}"/
 
+## Create .desktop on the user's Desktop and "Show Applications" directories
 cat << EOF | tee "${applications_path}"/"${shortcut_filename}" > "${desktop_path}"/"${shortcut_filename}"
 [Desktop Entry]
 Name=Bitcoin Core
@@ -115,7 +124,6 @@ chmod u+x "${desktop_path}"/"${shortcut_filename}"
 gio set "${desktop_path}"/"${shortcut_filename}" "metadata::trusted" true
 echo "ok."
 
-# Configure the node
 echo -n "  Setting default node behavior... "
 [ -d "${HOME}"/.bitcoin/ ] || mkdir "${HOME}"/.bitcoin/
 echo -e "server=1\nmempoolfullrbf=1" > "${HOME}"/.bitcoin/bitcoin.conf
@@ -130,7 +138,6 @@ echo -e "\nBitcoin Core is now synchronizing the blockchain.\nThis process can t
 echo -e "\nPRESS ANY KEY to disable sleep, suspend, and hibernate."
 read -rsn1
 
-## Disable system sleep, suspend, hibernate, and hybrid-sleep through the system control tool
 sudo systemctl mask sleep.target suspend.target hibernate.target hybrid-sleep.target
 echo "System settings updated."
 
@@ -141,11 +148,10 @@ for (( i=1; i<=sleep_time; i++)); do
 done
 echo
 
-# Pull the initial block download status
 blockchain_info=$("${bitcoin_core_binary_dir}"/bitcoin-cli --rpcwait getblockchaininfo)
 ibd_status=$(echo "${blockchain_info}" | jq '.initialblockdownload')
 
-while [[ $ibd_status == "true" ]]; do
+while [[ "${ibd_status}" == "true" ]]; do
   # Parse blockchain info values
   blocks=$(echo "${blockchain_info}" | jq '.blocks')
   headers=$(echo "${blockchain_info}" | jq '.headers')
@@ -154,7 +160,7 @@ while [[ $ibd_status == "true" ]]; do
   size_on_disk=$(echo "${blockchain_info}" | jq '.size_on_disk')
   
   # Handle case of early sync by replacing any e-9 with 10^-9
-  [[ "$sync_progress" == *"e"* ]] && sync_progress="0.000000001"
+  [[ "${sync_progress}" == *"e"* ]] && sync_progress="0.000000001"
   
   # Generate output string, clear the terminal, and print the output
   sync_status="Sync progress:          ${sync_progress}\nBlocks left to sync:    $((headers-blocks))\nCurrent chain tip:      $(date -d @"${last_block_time}" | cut -c 5-)\n\nEstimated size on disk: $((size_on_disk/1000/1000/1000))GB\nEstimated free space:   $(df -h / | tail -1 | awk '{print $4}')B"
@@ -168,7 +174,7 @@ while [[ $ibd_status == "true" ]]; do
     printf "."
   done
   echo
-  
+
   # Check for updated sync state
   blockchain_info=$("${bitcoin_core_binary_dir}"/bitcoin-cli --rpcwait getblockchaininfo)
   ibd_status=$(echo "${blockchain_info}" | jq '.initialblockdownload')
