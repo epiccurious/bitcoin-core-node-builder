@@ -139,27 +139,24 @@ if [ ${free_space_in_mib} -ge ${archival_node_minimum_in_mib} ]; then
 elif [ ${free_space_in_mib} -lt $((archival_node_minimum_in_mib/120)) ]; then
   echo -e "  You are too low on disk space to run Bitcoin Core.\nExiting..."
   exit 1
-elif [ ${free_space_in_mib} -lt $((archival_node_minimum_in_mib/40)) ]; then
-  echo -e "  Your disk space is low.\n  Setting the minimum 0.55GiB prune and enabling blocks-only mode."
-  echo -e "prune=550\nblocksonly=1" >> "${HOME}"/.bitcoin/bitcoin.conf
 else
-  if [ ${free_space_in_mib} -lt $((archival_node_minimum_in_mib/12)) ]; then
-    prune_ratio=20
-  #elif [ ${free_space_in_mib} -lt $((archival_node_minimum_in_mib/7)) ]; then
-  #  prune_ratio=30
-  elif [ ${free_space_in_mib} -lt $((archival_node_minimum_in_mib/4)) ]; then
-    prune_ratio=40
-  #elif [ ${free_space_in_mib} -lt $((archival_node_minimum_in_mib/2)) ]; then
-  #  prune_ratio=40
-  elif [ ${free_space_in_mib} -lt $((3*archival_node_minimum_in_mib/4)) ]; then
-    prune_ratio=60
-  #elif [ ${free_space_in_mib} -lt $((archival_node_minimum_in_mib*3/4)) ]; then
-  #  prune_ratio=70
+  if [ ${free_space_in_mib} -lt $((archival_node_minimum_in_mib/40)) ]; then
+    echo -e "  Your disk space is low.\n  Setting blocks-only mode and the minimum 0.55 GiB prune."
+    echo "blocksonly=1" >> "${HOME}"/.bitcoin/bitcoin.conf
+    prune_amount_in_mib="550"
   else
-    prune_ratio=80
+    if [ ${free_space_in_mib} -lt $((archival_node_minimum_in_mib/12)) ]; then
+      prune_ratio=20
+    elif [ ${free_space_in_mib} -lt $((archival_node_minimum_in_mib/4)) ]; then
+      prune_ratio=40
+    elif [ ${free_space_in_mib} -lt $((archival_node_minimum_in_mib*3/4)) ]; then
+      prune_ratio=60
+    else
+      prune_ratio=80
+    fi
+    echo -e "  Pruning to $((prune_amount_in_mib/1024)) GiB (${prune_ratio}% of the free space).\n  You can change this in ${HOME}/.bitcoin/bitcoin.conf."
+    prune_amount_in_mib=$((free_space_in_mib*prune_ratio/100))
   fi
-  prune_amount_in_mib=$((prune_ratio*free_space_in_mib/100))
-  echo -e "  Pruning to $((prune_amount_in_mib/1024)) GiB (${prune_ratio}% of the free space).\n  You can change this in ${HOME}/.bitcoin/bitcoin.conf."
   echo "prune=${prune_amount_in_mib}" >> "${HOME}"/.bitcoin/bitcoin.conf
 fi
 
