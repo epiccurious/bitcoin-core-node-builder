@@ -12,6 +12,7 @@ bitcoin_core_file=$(basename $bitcoin_core_url)
 sha256_hash_file="SHA256SUMS"
 gpg_signatures_file="SHA256SUMS.asc"
 gpg_good_signatures_required="7"
+guix_sigs_clone_directory="${HOME}/guix.sigs"
 
 # Name of the directory to extract into, without the trailing "/" (forward slash)
 bitcoin_core_extract_dir="${HOME}/bitcoin"
@@ -76,15 +77,14 @@ fi
 
 # Check the PGP signatures of SHA256SUMS
 echo -n "  Validating the signatures of the checksum file... "
-[ -d guix.sigs/ ] || git clone --quiet https://github.com/bitcoin-core/guix.sigs.git
-gpg --quiet --import guix.sigs/builder-keys/*.gpg
-gpg --quiet --import "${HOME}"/guix.sigs/builder-keys/*.gpg
+[ -d "${guix_sigs_clone_directory}"/ ] || git clone --quiet https://github.com/bitcoin-core/guix.sigs.git "${guix_sigs_clone_directory}"
+gpg --quiet --import "${guix_sigs_clone_directory}"/builder-keys/*.gpg
 gpg_good_signature_count=$(gpg --verify "${gpg_signatures_file}"  2>&1 | grep "^gpg: Good signature from " | wc -l)
 if [[ "${gpg_good_signature_count}" -ge "${gpg_good_signatures_required}" ]]; then
   echo "${gpg_good_signature_count} good."
   rm "${sha256_hash_file}"
   rm "${gpg_signatures_file}"
-  rm -rf guix.sigs/
+  rm -rf "${guix_sigs_clone_directory}"/
 else
   echo -e "INVALID. The download has failed.\nThis script cannot continue due to security concerns.\n\nPRESS ANY KEY to exit."
   read -rsn1
@@ -180,6 +180,5 @@ while [[ "${ibd_status}" == "true" ]]; do
   ibd_status=$(echo "${blockchain_info}" | jq '.initialblockdownload')
 done
 
-echo -e "This script has completed successfully.\n\nPRESS ANY KEY to end the script."
-read -rsn1
+echo -e "This script has completed successfully.\nExiting."
 exit 0
