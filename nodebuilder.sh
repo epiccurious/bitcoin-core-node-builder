@@ -131,12 +131,13 @@ echo "$((free_space_in_mib/1024)) GiB."
 archival_node_minimum_in_mib="$((600*1024))"
 ## The lower this number is, the more likely disk space errors during IBD
 ## The higher this number is, the more nodes prune.
-## The sweet spot is about xxx GB more than the current blocks/ + chainstate/.
+## The sweet spot is about 50-100 GB more than the current blocks/ + chainstate/ size,
+## which, as of June 2023, is around 522 GiB.
 
 if [ ${free_space_in_mib} -ge ${archival_node_minimum_in_mib} ]; then
   echo "  Your node will run as an unpruned full node."
 elif [ ${free_space_in_mib} -lt $((archival_node_minimum_in_mib/120)) ]; then
-  echo -e "  You are critically low on disk space.\nExiting..."
+  echo -e "  You are too low on disk space to run Bitcoin Core.\nExiting..."
   exit 1
 elif [ ${free_space_in_mib} -lt $((archival_node_minimum_in_mib/40)) ]; then
   echo -e "  Your disk space is low.\n  Setting the minimum 0.55GiB prune and enabling blocks-only mode."
