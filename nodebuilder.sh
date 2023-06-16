@@ -108,7 +108,7 @@ echo -n "Setting the default node behavior... "
 echo -e "server=1\nmempoolfullrbf=1" > "${HOME}"/.bitcoin/bitcoin.conf
 echo "ok."
 
-echo -n "Checking free space in ${HOME}... "
+echo -n "Checking free space in home directory... "
 free_space_in_bytes=$(df --block-size=1 --output=avail "${HOME}" | sed 1d)
 free_space_in_mib="$((free_space_in_bytes/1024/1024))"
 echo "$((free_space_in_mib/1024)) GiB."
@@ -126,16 +126,21 @@ elif [ ${free_space_in_mib} -lt $((archival_node_minimum_in_mib/120)) ]; then
   echo -e "  You are critically low on disk space.\nExiting..."
   exit 1
 elif [ ${free_space_in_mib} -lt $((archival_node_minimum_in_mib/40)) ]; then
-  echo -e "  Your disk space is low.\n  Setting the minimum 0.55GiB prune.\n  Enabling blocks-only mode."
+  echo -e "  Your disk space is low.\n  Setting the minimum 0.55GiB prune and enabling blocks-only mode."
   echo -e "prune=550\nblocksonly=1" >> "${HOME}"/.bitcoin/bitcoin.conf
 else
-  echo "  You have insufficient free space to run unpruned."
   if [ ${free_space_in_mib} -lt $((archival_node_minimum_in_mib/12)) ]; then
     prune_ratio=20
+  #elif [ ${free_space_in_mib} -lt $((archival_node_minimum_in_mib/7)) ]; then
+  #  prune_ratio=30
   elif [ ${free_space_in_mib} -lt $((archival_node_minimum_in_mib/4)) ]; then
     prune_ratio=40
+  #elif [ ${free_space_in_mib} -lt $((archival_node_minimum_in_mib/2)) ]; then
+  #  prune_ratio=40
   elif [ ${free_space_in_mib} -lt $((3*archival_node_minimum_in_mib/4)) ]; then
     prune_ratio=60
+  #elif [ ${free_space_in_mib} -lt $((archival_node_minimum_in_mib*3/4)) ]; then
+  #  prune_ratio=70
   else
     prune_ratio=80
   fi
