@@ -2,7 +2,7 @@
 set -e
 
 # Set the URL to download Bitcoin Core, taken from https://bitcoincore.org/en/download/
-bitcoin_core_url="https://bitcoincore.org/bin/bitcoin-core-24.0.1/bitcoin-24.0.1-x86_64-linux-gnu.tar.gz"
+bitcoin_core_url="https://bitcoincore.org/bin/bitcoin-core-25.0/bitcoin-25.0-x86_64-linux-gnu.tar.gz"
 
 # Pull the filename and download directory out of the url
 bitcoin_core_download_dir=$(dirname $bitcoin_core_url)
@@ -12,6 +12,7 @@ bitcoin_core_file=$(basename $bitcoin_core_url)
 sha256_hash_file="SHA256SUMS"
 gpg_signatures_file="SHA256SUMS.asc"
 gpg_good_signatures_required="7"
+guix_sigs_clone_directory="${HOME}/guix.sigs"
 
 # Name of the directory to extract into, without the trailing "/" (forward slash)
 bitcoin_core_extract_dir="${HOME}/bitcoin"
@@ -33,9 +34,18 @@ clear
 echo "Performing a full system upgrade... "
 sudo apt -qq update && sudo apt -qq dist-upgrade -y
 
-# Set automatical restart flag back to interactive mode.
+# Set services restart flag back to interactive mode.
 sudo sed -i 's/#$nrconf{restart} = '"'"'a'"'"';/$nrconf{restart} = '"'"'i'"'"';/g' /etc/needrestart/needrestart.conf
 
+if [ -f /var/run/reboot-required ]; then
+  echo -e "\nREBOOT REQUIRED to upgrade the following:\n$(cat /var/run/reboot-required.pkgs)\n\nPRESS ANY KEY to reboot or Ctrl+C to exit."
+  read -rsn1
+  echo "Rebooting."
+  reboot
+  exit 0
+fi
+
+# Install dependencies
 echo "Checking dependencies... "
 sudo apt -qq update && sudo apt -qq install -y git gnupg jq libxcb-xinerama0 wget
 
@@ -53,22 +63,24 @@ if [[ "${sha256_check}" == *"OK" ]]; then
 else
   echo -e "INVALID. The download has failed.\nThis script cannot continue due to security concerns.\n\nPRESS ANY KEY to exit."
   read -rsn1
+  >&2 echo "Exiting due to failed checksum validation."
   exit 1
 fi
 
 # Check the PGP signatures of SHA256SUMS
-echo -n "  Validating the checksum signatures... "
-[ -d guix.sigs/ ] || git clone --quiet https://github.com/bitcoin-core/guix.sigs.git
-gpg --quiet --import guix.sigs/builder-keys/*.gpg
+echo -n "  Validating the signatures of the checksum file... "
+[ -d "${guix_sigs_clone_directory}"/ ] || git clone --quiet https://github.com/bitcoin-core/guix.sigs.git "${guix_sigs_clone_directory}"
+gpg --quiet --import "${guix_sigs_clone_directory}"/builder-keys/*.gpg
 gpg_good_signature_count=$(gpg --verify "${gpg_signatures_file}"  2>&1 | grep "^gpg: Good signature from " | wc -l)
 if [[ "${gpg_good_signature_count}" -ge "${gpg_good_signatures_required}" ]]; then
   echo "${gpg_good_signature_count} good."
   rm "${sha256_hash_file}"
   rm "${gpg_signatures_file}"
-  rm -rf guix.sigs/
+  rm -rf "${guix_sigs_clone_directory}"/
 else
   echo -e "INVALID. The download has failed.\nThis script cannot continue due to security concerns.\n\nPRESS ANY KEY to exit."
   read -rsn1
+  >&2 echo "Exiting due to failed signature validation."
   exit 1
 fi
 
@@ -85,6 +97,7 @@ shortcut_filename="bitcoin_core.desktop"
 
 cp $(dirname $0)/img/bitcoin.png "${bitcoin_core_extract_dir}"/
 
+## Create .desktop on the user's Desktop and "Show Applications" directories
 cat << EOF | tee "${applications_path}"/"${shortcut_filename}" > "${desktop_path}"/"${shortcut_filename}"
 [Desktop Entry]
 Name=Bitcoin Core
@@ -158,10 +171,9 @@ echo -e "\nBitcoin Core is now synchronizing the blockchain.\nThis process can t
 echo -e "\nPRESS ANY KEY to disable sleep, suspend, and hibernate."
 read -rsn1
 
-echo -n "Updating system settings... "
+echo "Updating system settings... "
 ## Disable system sleep, suspend, hibernate, and hybrid-sleep through the system control tool
 sudo systemctl mask sleep.target suspend.target hibernate.target hybrid-sleep.target
-echo "ok."
 
 echo -en "\nClose this Terminal window by clicking on the \"X\".\nThis screen will refresh in ${sleep_time} seconds."
 for (( i=1; i<=sleep_time; i++)); do
@@ -170,11 +182,10 @@ for (( i=1; i<=sleep_time; i++)); do
 done
 echo
 
-# Pull the initial block download status
 blockchain_info=$("${bitcoin_core_binary_dir}"/bitcoin-cli --rpcwait getblockchaininfo)
 ibd_status=$(echo "${blockchain_info}" | jq '.initialblockdownload')
 
-while [[ $ibd_status == "true" ]]; do
+while [[ "${ibd_status}" == "true" ]]; do
   # Parse blockchain info values
   blocks=$(echo "${blockchain_info}" | jq '.blocks')
   headers=$(echo "${blockchain_info}" | jq '.headers')
@@ -183,7 +194,7 @@ while [[ $ibd_status == "true" ]]; do
   size_on_disk=$(echo "${blockchain_info}" | jq '.size_on_disk')
   
   # Handle case of early sync by replacing any e-9 with 10^-9
-  [[ "$sync_progress" == *"e"* ]] && sync_progress="0.000000001"
+  [[ "${sync_progress}" == *"e"* ]] && sync_progress="0.000000001"
   
   # Generate output string, clear the terminal, and print the output
   sync_status="Sync progress:          ${sync_progress}\nBlocks left to sync:    $((headers-blocks))\nCurrent chain tip:      $(date -d @"${last_block_time}" | cut -c 5-)\n\nEstimated size on disk: $((size_on_disk/1024/1024/1024)) GiB\nEstimated free space:   $(df -h / | tail -1 | awk '{print $4}')B"
@@ -196,12 +207,12 @@ while [[ $ibd_status == "true" ]]; do
     sleep 1
     printf "."
   done
-  
+  echo
+
   # Check for updated sync state
   blockchain_info=$("${bitcoin_core_binary_dir}"/bitcoin-cli --rpcwait getblockchaininfo)
   ibd_status=$(echo "${blockchain_info}" | jq '.initialblockdownload')
 done
 
-echo -e "This script has completed successfully.\n\nPRESS ANY KEY to end the script."
-read -rsn1
+echo -e "This script has completed successfully.\nExiting."
 exit 0
