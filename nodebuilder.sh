@@ -155,7 +155,7 @@ else
       prune_ratio=80
     fi
     prune_amount_in_mib=$((free_space_in_mib*prune_ratio/100))
-    echo -e "  Pruning to $((prune_amount_in_mib/1024)) GiB (${prune_ratio}% of the free space).\n  You can change this in ${HOME}/.bitcoin/bitcoin.conf."
+    echo -e "  Pruning to $((prune_amount_in_mib/1024)) GiB (${prune_ratio}% of the free space).\n  You can change this in ~/.bitcoin/bitcoin.conf."
   fi
   echo "prune=${prune_amount_in_mib}" >> "${HOME}"/.bitcoin/bitcoin.conf
 fi
