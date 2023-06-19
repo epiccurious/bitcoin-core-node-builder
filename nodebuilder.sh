@@ -31,7 +31,7 @@ sudo apt -qq update && sudo apt -qq dist-upgrade -y
 sudo sed -i 's/#$nrconf{restart} = '"'"'a'"'"';/$nrconf{restart} = '"'"'i'"'"';/g' /etc/needrestart/needrestart.conf
 
 if [ -f /var/run/reboot-required ]; then
-  echo -e "\nREBOOT REQUIRED to upgrade the following:\n$(cat /var/run/reboot-required.pkgs)\n\nPRESS ANY KEY to reboot or Ctrl+C to exit."
+  echo -en "\nREBOOT REQUIRED to upgrade the following:\n$(cat /var/run/reboot-required.pkgs)\n\nPRESS ANY KEY to reboot or press Ctrl+C to exit... "
   read -rsn1
   echo "Rebooting."
   reboot
@@ -55,9 +55,9 @@ sha256_check=$(echo $(grep ${bitcoin_tarball_file} ${bitcoin_hash_file}) | sha25
 if [[ "${sha256_check}" == *"OK" ]]; then
   echo "ok."
 else
-  echo -e "INVALID. The download has failed.\nThis script cannot continue due to security concerns.\n\nPRESS ANY KEY to exit."
+  echo -en "INVALID. The download has failed.\nThis script cannot continue due to security concerns.\n\nPRESS ANY KEY to exit... "
   read -rsn1
-  >&2 echo "Exiting due to failed checksum validation."
+  >&2 echo "Exiting."
   exit 1
 fi
 
@@ -72,9 +72,9 @@ if [[ "${gpg_good_signature_count}" -ge "${gpg_good_signatures_required}" ]]; th
   rm "${gpg_signatures_file}"
   rm -rf "${guix_sigs_clone_directory}"/
 else
-  echo -e "INVALID. The download has failed.\nThis script cannot continue due to security concerns.\n\nPRESS ANY KEY to exit."
+  echo -en "INVALID. The download has failed.\nThis script cannot continue due to security concerns.\n\nPRESS ANY KEY to exit... "
   read -rsn1
-  >&2 echo "Exiting due to failed signature validation."
+  >&2 echo "Exiting."
   exit 1
 fi
 
@@ -120,11 +120,11 @@ echo -n "Starting Bitcoin Core... "
 "${bitcoin_core_binary_dir}"/bitcoin-cli --rpcwait getrpcinfo > /dev/null
 echo "ok."
 
-echo -e "\nSynchronizing the blockchain depends on your computer and internet speed\n  and can take several weeks on slow connections. Please be patient.\nPRESS ANY KEY to disable sleep, suspend, and hibernate."
+echo -en "  Note: Synchronizing the blockchain may take several weeks,\n  on old computers and slow internet. Please be patient.\n\nPRESS ANY KEY to disable sleep, suspend, and hibernate... "
 read -rsn1
 
 sudo systemctl mask sleep.target suspend.target hibernate.target hybrid-sleep.target
-echo "System settings updated."
+echo "System settings have been updated."
 
 echo -en "\nClose this Terminal window by clicking on the \"X\".\nThis screen will refresh in ${sleep_time} seconds."
 for (( i=1; i<=sleep_time; i++)); do
