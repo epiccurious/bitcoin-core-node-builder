@@ -129,7 +129,7 @@ archival_node_minimum_in_mib="$((600*1024))"
 
 if [ ${free_space_in_mib} -ge ${archival_node_minimum_in_mib} ]; then
   echo "  Your node will run as an unpruned full node."
-elif [ ${free_space_in_mib} -lt $((archival_node_minimum_in_mib/120)) ]; then
+elif [ ${free_space_in_mib} -lt $((archival_node_minimum_in_mib/80)) ]; then
   echo -e "  You are too low on disk space to run Bitcoin Core.\nExiting..."
   exit 1
 else
