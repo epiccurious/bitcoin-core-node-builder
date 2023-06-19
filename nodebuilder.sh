@@ -32,7 +32,7 @@ sudo sed -i 's/#$nrconf{restart} = '"'"'a'"'"';/$nrconf{restart} = '"'"'i'"'"';/
 
 if [ -f /var/run/reboot-required ]; then
   echo -en "\nREBOOT REQUIRED to upgrade the following:\n$(cat /var/run/reboot-required.pkgs)\n\nPRESS ANY KEY to reboot or press Ctrl+C to exit... "
-  read -rsn1
+  read -rsn1 && echo
   echo "Rebooting."
   reboot
   exit 0
@@ -56,7 +56,7 @@ if [[ "${sha256_check}" == *"OK" ]]; then
   echo "ok."
 else
   echo -en "INVALID. The download has failed.\nThis script cannot continue due to security concerns.\n\nPRESS ANY KEY to exit... "
-  read -rsn1
+  read -rsn1 && echo
   >&2 echo "Exiting."
   exit 1
 fi
@@ -73,7 +73,7 @@ if [[ "${gpg_good_signature_count}" -ge "${gpg_good_signatures_required}" ]]; th
   rm -rf "${guix_sigs_clone_directory}"/
 else
   echo -en "INVALID. The download has failed.\nThis script cannot continue due to security concerns.\n\nPRESS ANY KEY to exit... "
-  read -rsn1
+  read -rsn1 && echo
   >&2 echo "Exiting."
   exit 1
 fi
@@ -121,7 +121,7 @@ echo -n "Starting Bitcoin Core... "
 echo "ok."
 
 echo -en "  Note: Synchronizing the blockchain may take several weeks,\n  on old computers and slow internet. Please be patient.\n\nPRESS ANY KEY to disable sleep, suspend, and hibernate... "
-read -rsn1
+read -rsn1 && echo
 
 sudo systemctl mask sleep.target suspend.target hibernate.target hybrid-sleep.target
 echo "System settings have been updated."
