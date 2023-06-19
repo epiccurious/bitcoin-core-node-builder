@@ -134,7 +134,7 @@ echo -n "Starting Bitcoin Core... "
 "${bitcoin_core_binary_dir}"/bitcoin-cli --rpcwait getrpcinfo > /dev/null
 echo "ok."
 
-echo -en "  Note: Synchronizing Bitcoin may take several weeks,\n  on old computers and slow internet. Please be patient.\nPRESS ANY KEY to disable sleep, suspend, and hibernate... "
+echo -en "  Note: Synchronizing the blockchain may take several weeks,\n  on old computers and slow internet. Please be patient.\n\nPRESS ANY KEY to disable sleep, suspend, and hibernate... "
 read -rsn1
 
 sudo systemctl mask sleep.target suspend.target hibernate.target hybrid-sleep.target
