@@ -1,24 +1,17 @@
 #!/bin/bash
 set -e
 
-# Set the URL to download Bitcoin Core, taken from https://bitcoincore.org/en/download/
-bitcoin_core_url="https://bitcoincore.org/bin/bitcoin-core-25.0/bitcoin-25.0-x86_64-linux-gnu.tar.gz"
+bitcoin_version="25.0"
+bitcoin_source="https://bitcoincore.org/bin/bitcoin-core-${bitcoin_version}"
+bitcoin_tarball_file="bitcoin-${bitcoin_version}-x86_64-linux-gnu.tar.gz"
+bitcoin_core_extract_dir="${HOME}/bitcoin"
+bitcoin_core_binary_dir="${bitcoin_core_extract_dir}/bin"
 
-# Pull the filename and download directory out of the url
-bitcoin_core_download_dir=$(dirname $bitcoin_core_url)
-bitcoin_core_file=$(basename $bitcoin_core_url)
-
-# The filenames for the hash and signature
-sha256_hash_file="SHA256SUMS"
+bitcoin_hash_file="SHA256SUMS"
 gpg_signatures_file="SHA256SUMS.asc"
 gpg_good_signatures_required="7"
 guix_sigs_clone_directory="${HOME}/guix.sigs"
 
-# Name of the directory to extract into, without the trailing "/" (forward slash)
-bitcoin_core_extract_dir="${HOME}/bitcoin"
-bitcoin_core_binary_dir="${bitcoin_core_extract_dir}/bin"
-
-# The default amount of time to sleep
 sleep_time="10"
 
 # Set services to automatically restart during dist-upgrade
@@ -50,14 +43,14 @@ echo "Checking dependencies... "
 sudo apt -qq update && sudo apt -qq install -y git gnupg jq libxcb-xinerama0 wget
 
 echo -n "Downloading Bitcoin Core files... "
-[ -f "${bitcoin_core_file}" ] || wget -q "${bitcoin_core_download_dir}"/"${bitcoin_core_file}"
-[ -f "${sha256_hash_file}" ] || wget -q "${bitcoin_core_download_dir}"/"${sha256_hash_file}"
-[ -f "${gpg_signatures_file}" ] || wget -q "${bitcoin_core_download_dir}"/"${gpg_signatures_file}"
+[ -f "${bitcoin_tarball_file}" ] || wget -q "${bitcoin_source}"/"${bitcoin_tarball_file}"
+[ -f "${bitcoin_hash_file}" ] || wget -q "${bitcoin_source}"/"${bitcoin_hash_file}"
+[ -f "${gpg_signatures_file}" ] || wget -q "${bitcoin_source}"/"${gpg_signatures_file}"
 echo "ok."
 
 # Check that the release file's checksum is listed in SHA256SUMS
 echo -n "  Validating the download's checksum... "
-sha256_check=$(echo $(grep "${bitcoin_core_file}" "${sha256_hash_file}") | sha256sum --check 2>/dev/null)
+sha256_check=$(echo $(grep ${bitcoin_tarball_file} ${bitcoin_hash_file}) | sha256sum --check 2>/dev/null)
 if [[ "${sha256_check}" == *"OK" ]]; then
   echo "ok."
 else
@@ -74,7 +67,7 @@ gpg --quiet --import "${guix_sigs_clone_directory}"/builder-keys/*.gpg
 gpg_good_signature_count=$(gpg --verify "${gpg_signatures_file}"  2>&1 | grep "^gpg: Good signature from " | wc -l)
 if [[ "${gpg_good_signature_count}" -ge "${gpg_good_signatures_required}" ]]; then
   echo "${gpg_good_signature_count} good."
-  rm "${sha256_hash_file}"
+  rm "${bitcoin_hash_file}"
   rm "${gpg_signatures_file}"
   rm -rf "${guix_sigs_clone_directory}"/
 else
@@ -86,7 +79,7 @@ fi
 
 echo -n "Extracting Bitcoin Core... "
 [ -d "${bitcoin_core_extract_dir}" ] || mkdir "${bitcoin_core_extract_dir}"/
-tar -xzf "${bitcoin_core_file}" -C "${bitcoin_core_extract_dir}"/ --strip-components=1
+tar -xzf "${bitcoin_tarball_file}" -C "${bitcoin_core_extract_dir}"/ --strip-components=1
 echo "ok."
 
 echo -n "Creating Desktop and Applications shortcuts... "
@@ -165,8 +158,7 @@ echo -n "Starting Bitcoin Core... "
 "${bitcoin_core_binary_dir}"/bitcoin-cli --rpcwait getrpcinfo > /dev/null
 echo "ok."
 
-echo -e "\nBitcoin Core is now synchronizing the blockchain.\nThis process can take several weeks on slow systems.\nKeep your computer connected to stable power and internet.\nIf you need to restart, re-run Bitcoin Core from your desktop."
-echo -e "\nPRESS ANY KEY to disable sleep, suspend, and hibernate."
+echo -e "\nSynchronizing the blockchain depends on your computer and internet speed\n  and can take several weeks on slow connections. Please be patient.\nPRESS ANY KEY to disable sleep, suspend, and hibernate."
 read -rsn1
 
 echo "Updating system settings... "
