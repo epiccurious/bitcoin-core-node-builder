@@ -151,20 +151,18 @@ blockchain_info=$("${bitcoin_core_binary_dir}"/bitcoin-cli --rpcwait getblockcha
 ibd_status=$(echo "${blockchain_info}" | jq '.initialblockdownload')
 
 while [[ "${ibd_status}" == "true" ]]; do
-  # Parse blockchain info values
+  sync_progress=$(echo "${blockchain_info}" | jq '.verificationprogress')
+  # Handle case of early sync by replacing scientific notation with decimal
+  [[ "${sync_progress}" == *"e"* ]] && sync_progress="0.000000001"
+  sync_progress_percent=$((sync_progress*100))
+  
   blocks=$(echo "${blockchain_info}" | jq '.blocks')
   headers=$(echo "${blockchain_info}" | jq '.headers')
   last_block_time=$(echo "${blockchain_info}" | jq '.time')
   size_on_disk=$(echo "${blockchain_info}" | jq '.size_on_disk')
   
-  sync_progress=$(echo "${blockchain_info}" | jq '.verificationprogress')
-  # Handle case of early sync by replacing scientific notation with decimal
-  [[ "${sync_progress}" == *"e"* ]] && sync_progress="0.000000001"
-  sync_progress_percent=$((sync_progress*100))
-  sync_progress_percent_trimmed=$(printf "%.4f" ${sync_progress_percent})
-  
   # Generate output string, clear the terminal, and print the output
-  sync_status="Sync progress:          ${sync_progress_percent_trimmed} %\nBlocks left to sync:    $((headers-blocks))\nCurrent chain tip:      $(date -d @"${last_block_time}" | cut -c 5-)\n\nEstimated size on disk: $((size_on_disk/1000/1000/1000))GB\nEstimated free space:   $(df -h / | tail -1 | awk '{print $4}')B"
+  sync_status="Sync progress:          $(printf '%.4f' ${sync_progress_percent}) %\nBlocks left to sync:    $((headers-blocks))\nCurrent chain tip:      $(date -d @"${last_block_time}" | cut -c 5-)\n\nEstimated size on disk: $((size_on_disk/1000/1000/1000))GB\nEstimated free space:   $(df -h / | tail -1 | awk '{print $4}')B"
   clear
   echo -e "${sync_status}"
   
