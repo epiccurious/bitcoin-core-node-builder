@@ -154,7 +154,7 @@ while [[ "${ibd_status}" == "true" ]]; do
   sync_progress=$(echo "${blockchain_info}" | jq '.verificationprogress')
   # Handle case of early sync by replacing scientific notation with decimal
   [[ "${sync_progress}" == *"e"* ]] && sync_progress="0.000000001"
-  sync_progress_percent=$((sync_progress*100))
+  sync_progress_percent=$(echo "${sync_progress}*100" | bc)
   
   blocks=$(echo "${blockchain_info}" | jq '.blocks')
   headers=$(echo "${blockchain_info}" | jq '.headers')
