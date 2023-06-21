@@ -42,7 +42,6 @@ fi
 echo "Checking dependencies... "
 sudo apt -qq update && sudo apt -qq install -y git gnupg jq libxcb-xinerama0 wget
 
-# Download Bitcoin Core and the list of valid checksums
 echo -n "Downloading Bitcoin Core files... "
 [ -f "${bitcoin_tarball_file}" ] || wget -q "${bitcoin_source}"/"${bitcoin_tarball_file}"
 [ -f "${bitcoin_hash_file}" ] || wget -q "${bitcoin_source}"/"${bitcoin_hash_file}"
@@ -83,8 +82,8 @@ echo -n "Extracting Bitcoin Core... "
 tar -xzf "${bitcoin_tarball_file}" -C "${bitcoin_core_extract_dir}"/ --strip-components=1
 echo "ok."
 
-echo "Configuring Bitcoin Core... "
-echo -n "  Creating the desktop shortcut... "
+echo -n "Creating Desktop and Applications shortcuts... "
+## Create shortcut on the Desktop and in the "Show Applications" view
 desktop_path="${HOME}/Desktop"
 applications_path="${HOME}/.local/share/applications"
 shortcut_filename="bitcoin_core.desktop"
@@ -110,10 +109,49 @@ chmod u+x "${desktop_path}"/"${shortcut_filename}"
 gio set "${desktop_path}"/"${shortcut_filename}" "metadata::trusted" true
 echo "ok."
 
-echo -n "  Setting default node behavior... "
+echo -n "Setting the default node behavior... "
 [ -d "${HOME}"/.bitcoin/ ] || mkdir "${HOME}"/.bitcoin/
 echo -e "server=1\nmempoolfullrbf=1" > "${HOME}"/.bitcoin/bitcoin.conf
 echo "ok."
+
+echo -n "Checking free space in home directory... "
+free_space_in_bytes=$(df --block-size=1 --output=avail "${HOME}" | sed 1d)
+free_space_in_mib="$((free_space_in_bytes/1024/1024))"
+echo "$((free_space_in_mib/1024)) GiB."
+
+## This constant will need to be adjusted over time as the chain grows
+## or need to find how to generate this dynamically in a trustless way.
+archival_node_minimum_in_mib="$((600*1024))"
+## The lower this number is, the more likely disk space errors during IBD
+## The higher this number is, the more nodes prune.
+## The sweet spot is about 50-100 GB more than the current blocks/ + chainstate/ size,
+## which, as of June 2023, is around 522 GiB.
+
+if [ ${free_space_in_mib} -ge ${archival_node_minimum_in_mib} ]; then
+  echo "  Your node will run as an unpruned full node."
+elif [ ${free_space_in_mib} -lt $((archival_node_minimum_in_mib/80)) ]; then
+  echo -e "  You are too low on disk space to run Bitcoin Core.\nExiting..."
+  exit 1
+else
+  if [ ${free_space_in_mib} -lt $((archival_node_minimum_in_mib/40)) ]; then
+    echo -e "  Your disk space is low.\n  Setting blocks-only mode and the minimum 0.55 GiB prune."
+    echo "blocksonly=1" >> "${HOME}"/.bitcoin/bitcoin.conf
+    prune_amount_in_mib="550"
+  else
+    if [ ${free_space_in_mib} -lt $((archival_node_minimum_in_mib/12)) ]; then
+      prune_ratio=20
+    elif [ ${free_space_in_mib} -lt $((archival_node_minimum_in_mib/4)) ]; then
+      prune_ratio=40
+    elif [ ${free_space_in_mib} -lt $((archival_node_minimum_in_mib*3/4)) ]; then
+      prune_ratio=60
+    else
+      prune_ratio=80
+    fi
+    prune_amount_in_mib=$((free_space_in_mib*prune_ratio/100))
+    echo -e "  Pruning to $((prune_amount_in_mib/1024)) GiB (${prune_ratio}% of the free space).\n  You can change this in ~/.bitcoin/bitcoin.conf."
+  fi
+  echo "prune=${prune_amount_in_mib}" >> "${HOME}"/.bitcoin/bitcoin.conf
+fi
 
 echo -n "Starting Bitcoin Core... "
 "${bitcoin_core_binary_dir}"/bitcoin-qt 2>/dev/null & disown
@@ -123,6 +161,8 @@ echo "ok."
 echo -en "  Note: Synchronizing the blockchain may take several weeks,\n  on old computers and slow internet. Please be patient.\n\nPRESS ANY KEY to disable sleep, suspend, and hibernate... "
 read -rsn1 && echo
 
+echo "Updating system settings... "
+## Disable system sleep, suspend, hibernate, and hybrid-sleep through the system control tool
 sudo systemctl mask sleep.target suspend.target hibernate.target hybrid-sleep.target
 echo "System settings have been updated."
 
@@ -148,7 +188,7 @@ while [[ "${ibd_status}" == "true" ]]; do
   [[ "${sync_progress}" == *"e"* ]] && sync_progress="0.000000001"
   
   # Generate output string, clear the terminal, and print the output
-  sync_status="Sync progress:          ${sync_progress}\nBlocks left to sync:    $((headers-blocks))\nCurrent chain tip:      $(date -d @"${last_block_time}" | cut -c 5-)\n\nEstimated size on disk: $((size_on_disk/1000/1000/1000))GB\nEstimated free space:   $(df -h / | tail -1 | awk '{print $4}')B"
+  sync_status="Sync progress:          ${sync_progress}\nBlocks left to sync:    $((headers-blocks))\nCurrent chain tip:      $(date -d @"${last_block_time}" | cut -c 5-)\n\nEstimated size on disk: $((size_on_disk/1024/1024/1024)) GiB\nEstimated free space:   $(df -h / | tail -1 | awk '{print $4}')B"
   clear
   echo -e "${sync_status}"
   
