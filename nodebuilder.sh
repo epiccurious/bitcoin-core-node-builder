@@ -134,12 +134,12 @@ fi
 
 ## This constant will need to be adjusted over time as the chain grows
 ## or need to find how to generate this dynamically in a trustless way.
-archival_node_required_disk_in_mib="600*1024"
+archival_node_required_disk_in_gib="600"
 ## The lower this number is, the more likely disk space errors during IBD
 ## The higher this number is, the more nodes prune.
 ## The sweet spot is about 50 to 100 GB more than the current blocks/ + chainstate/ size,
 ## which, as of June 2023, is around 522 GiB.
-archival_node_minimum_in_mib=$((archival_node_required_disk_in_mib-blocks_size_in_mib-chainstate_size_in_mib))
+archival_node_minimum_in_mib=$((archival_node_required_disk_in_gib*1024-blocks_size_in_mib-chainstate_size_in_mib))
 
 if [ ${free_space_in_mib} -ge ${archival_node_minimum_in_mib} ]; then
   echo "  Your node will run as an unpruned full node."
