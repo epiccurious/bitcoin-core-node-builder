@@ -25,7 +25,7 @@ fi
 # Perform a full system upgrade (comparable to running Ubuntu System Updater)
 clear
 echo "Performing a full system upgrade... "
-sudo apt -qq update && sudo apt -qq dist-upgrade -y
+sudo apt -qq update && sudo apt -qq dist-upgrade --assume-yes
 
 # Set services restart flag back to interactive mode.
 sudo sed -i 's/#$nrconf{restart} = '"'"'a'"'"';/$nrconf{restart} = '"'"'i'"'"';/g' /etc/needrestart/needrestart.conf
@@ -40,7 +40,7 @@ fi
 
 # Install dependencies
 echo "Checking dependencies... "
-sudo apt -qq update && sudo apt -qq install -y git gnupg jq libxcb-xinerama0 wget
+sudo apt -qq update && sudo apt -qq install --assume-yes --no-install-recommends git gnupg jq libxcb-xinerama0 wget
 
 echo -n "Downloading Bitcoin Core files... "
 [ -f "${bitcoin_tarball_file}" ] || wget -q "${bitcoin_source}"/"${bitcoin_tarball_file}"
@@ -61,7 +61,7 @@ else
 fi
 
 # Check the PGP signatures of SHA256SUMS
-echo -n "  Validating the signatures of the checksum file... "
+echo -n "  Validating the checksum signatures... "
 [ -d "${guix_sigs_clone_directory}"/ ] || git clone --quiet https://github.com/bitcoin-core/guix.sigs.git "${guix_sigs_clone_directory}"
 gpg --quiet --import "${guix_sigs_clone_directory}"/builder-keys/*.gpg
 gpg_good_signature_count=$(gpg --verify "${gpg_signatures_file}"  2>&1 | grep "^gpg: Good signature from " | wc -l)
