@@ -49,7 +49,7 @@ echo -n "Downloading Bitcoin Core files... "
 echo "ok."
 
 # Check that the release file's checksum is listed in SHA256SUMS
-echo -n "  Validating the download's checksum... "
+echo -n "  Validating the checksum... "
 sha256_check=$(echo $(grep ${bitcoin_tarball_file} ${bitcoin_hash_file}) | sha256sum --check 2>/dev/null)
 if [[ "${sha256_check}" == *"OK" ]]; then
   echo "ok."
