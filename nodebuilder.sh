@@ -158,13 +158,9 @@ echo -n "Starting Bitcoin Core... "
 "${bitcoin_core_binary_dir}"/bitcoin-cli --rpcwait getrpcinfo > /dev/null
 echo "ok."
 
-echo -en "  Note: Synchronizing the blockchain may take several weeks,\n  on old computers and slow internet. Please be patient.\n\nPRESS ANY KEY to disable sleep, suspend, and hibernate... "
-read -rsn1 && echo
-
-echo "Updating system settings... "
-## Disable system sleep, suspend, hibernate, and hybrid-sleep through the system control tool
-sudo systemctl mask sleep.target suspend.target hibernate.target hybrid-sleep.target
-echo "System settings have been updated."
+echo -n "Disabling system sleep, suspend, and hibernate... "
+sudo systemctl mask sleep.target suspend.target hibernate.target hybrid-sleep.target &> /dev/null
+echo "ok."
 
 echo -en "\nClose this Terminal window by clicking on the \"X\".\nThis screen will refresh in ${sleep_time} seconds."
 for (( i=1; i<=sleep_time; i++)); do
@@ -192,16 +188,15 @@ while [[ "${ibd_status}" == "true" ]]; do
   clear
   echo -e "${sync_status}"
   
-  # Initiate sleep loop for "sleep_time" seconds
-  echo -en "\nClose this Terminal window by clicking on the \"X\".\nThis screen will refresh in ${sleep_time} seconds."
+  echo -en "\nSynchronizing can take weeks on a slow connection.\n\nClose this Terminal window by clicking on the \"X\".\nThis screen will refresh in ${sleep_time} seconds."
   for (( i=1; i<=sleep_time; i++)); do
     sleep 1
     printf "."
   done
-  echo
 
   # Check for updated sync state
   blockchain_info=$("${bitcoin_core_binary_dir}"/bitcoin-cli --rpcwait getblockchaininfo)
+  echo
   ibd_status=$(echo "${blockchain_info}" | jq '.initialblockdownload')
 done
 
