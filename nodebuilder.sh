@@ -158,7 +158,7 @@ echo -n "Starting Bitcoin Core... "
 "${bitcoin_core_binary_dir}"/bitcoin-cli --rpcwait getrpcinfo > /dev/null
 echo "ok."
 
-echo -n "Disabling sleep, suspend, and hibernate... "
+echo -n "Disabling system sleep, suspend, and hibernate... "
 sudo systemctl mask sleep.target suspend.target hibernate.target hybrid-sleep.target &> /dev/null
 echo "ok."
 
