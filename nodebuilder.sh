@@ -61,7 +61,7 @@ else
 fi
 
 # Check the PGP signatures of SHA256SUMS
-echo -n "  Validating the checksum signatures... "
+echo -n "  Validating the signatures... "
 [ -d "${guix_sigs_clone_directory}"/ ] || git clone --quiet https://github.com/bitcoin-core/guix.sigs.git "${guix_sigs_clone_directory}"
 gpg --quiet --import "${guix_sigs_clone_directory}"/builder-keys/*.gpg
 gpg_good_signature_count=$(gpg --verify "${gpg_signatures_file}"  2>&1 | grep "^gpg: Good signature from " | wc -l)
