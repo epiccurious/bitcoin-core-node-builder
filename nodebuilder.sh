@@ -188,7 +188,7 @@ while [[ "${ibd_status}" == "true" ]]; do
   clear
   echo -e "${sync_status}"
   
-  echo -en "\nSynchronizing can take weeks on slow connections.\n\nClose this Terminal window by clicking on the \"X\".\nThis screen will refresh in ${sleep_time} seconds."
+  echo -en "\nSynchronizing can take weeks on a slow connection.\n\nClose this Terminal window by clicking on the \"X\".\nThis screen will refresh in ${sleep_time} seconds."
   for (( i=1; i<=sleep_time; i++)); do
     sleep 1
     printf "."
