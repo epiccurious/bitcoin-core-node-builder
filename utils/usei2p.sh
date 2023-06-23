@@ -1,4 +1,7 @@
 #!/bin/bash
+#
+# Use I2P with Bitcoin Core.
+
 
 # THIS SCRIPT IS NOT READY YET
 # DO NOT TRUST THIS CODE YET
