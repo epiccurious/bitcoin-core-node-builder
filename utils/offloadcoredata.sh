@@ -1,4 +1,6 @@
 #!/bin/bash
+#
+# Offload the synced Bitcoin Core blocks and chainstate data.
 set -e
 
 ## The Bitcoin Core blocks source directory, with no trailing slash

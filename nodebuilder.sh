@@ -1,4 +1,6 @@
 #!/bin/bash
+#
+# A minimally-interactive script for launching a Bitcoin Core node
 set -e
 
 bitcoin_version="25.0"

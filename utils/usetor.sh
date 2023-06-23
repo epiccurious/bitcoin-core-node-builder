@@ -1,4 +1,6 @@
 #!/bin/bash
+#
+# Use Tor with Bitcoin Core.
 
 # THIS SCRIPT IS NOT READY YET
 # DO NOT TRUST THIS CODE YET
