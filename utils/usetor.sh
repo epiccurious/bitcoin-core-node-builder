@@ -2,7 +2,6 @@
 #
 # Use Tor with Bitcoin Core.
 
-
 # THIS SCRIPT IS NOT READY YET
 # DO NOT TRUST THIS CODE YET
 # IT'S A DRAFT AND NOT TESTED
