@@ -9,6 +9,10 @@ bitcoin_tarball_file="bitcoin-${bitcoin_version}-x86_64-linux-gnu.tar.gz"
 bitcoin_core_extract_dir="${HOME}/bitcoin"
 bitcoin_core_binary_dir="${bitcoin_core_extract_dir}/bin"
 
+bitcoin_core_data_dir="${HOME}/.bitcoin"
+bitcoin_core_blocks_dir="${bitcoin_core_data_dir}/blocks"
+bitcoin_core_chainstate_dir="${bitcoin_core_data_dir}/chainstate"
+
 bitcoin_hash_file="SHA256SUMS"
 gpg_signatures_file="SHA256SUMS.asc"
 gpg_good_signatures_required="7"
@@ -26,8 +30,9 @@ fi
 
 # Perform a full system upgrade (comparable to running Ubuntu System Updater)
 clear
-echo "Performing a full system upgrade... "
-sudo apt -qq update && sudo apt -qq dist-upgrade --assume-yes
+echo -n "Performing a full system upgrade... "
+sudo apt-get -qq update && echo
+sudo apt-get -qq dist-upgrade --assume-yes
 
 # Set services restart flag back to interactive mode.
 sudo sed -i 's/#$nrconf{restart} = '"'"'a'"'"';/$nrconf{restart} = '"'"'i'"'"';/g' /etc/needrestart/needrestart.conf
@@ -42,7 +47,7 @@ fi
 
 # Install dependencies
 echo "Checking dependencies... "
-sudo apt -qq update && sudo apt -qq install --assume-yes --no-install-recommends git gnupg jq libxcb-xinerama0 wget
+sudo apt-get -qq update && sudo apt-get -qq install --assume-yes --no-install-recommends git gnupg jq libxcb-xinerama0 wget
 
 echo -n "Downloading Bitcoin Core files... "
 [ -f "${bitcoin_tarball_file}" ] || wget -q "${bitcoin_source}"/"${bitcoin_tarball_file}"
@@ -112,22 +117,31 @@ gio set "${desktop_path}"/"${shortcut_filename}" "metadata::trusted" true
 echo "ok."
 
 echo -n "Setting the default node behavior... "
-[ -d "${HOME}"/.bitcoin/ ] || mkdir "${HOME}"/.bitcoin/
-echo -e "server=1\nmempoolfullrbf=1" > "${HOME}"/.bitcoin/bitcoin.conf
+[ -d "${bitcoin_core_data_dir}"/ ] || mkdir "${bitcoin_core_data_dir}"/
+echo -e "server=1\nmempoolfullrbf=1" > "${bitcoin_core_data_dir}"/bitcoin.conf
 echo "ok."
 
 echo -n "Checking free space in home directory... "
-free_space_in_bytes=$(df --block-size=1 --output=avail "${HOME}" | sed 1d)
-free_space_in_mib="$((free_space_in_bytes/1024/1024))"
+free_space_in_mib=$(df --output=avail --block-size="1MiB" "${HOME}" | sed 1d)
 echo "$((free_space_in_mib/1024)) GiB."
+
+blocks_size_in_mib="0"
+if [ -d "${bitcoin_core_blocks_dir}"/ ]; then
+  blocks_size_in_mib=$(du -d0 --block-size="1MiB" "${bitcoin_core_blocks_dir}" | cut -f1)
+fi
+chainstate_size_in_mib="0"
+if [ -d "${bitcoin_core_chainstate_dir}"/ ]; then
+  chainstate_size_in_mib=$(du -d0 --block-size="1MiB" "${bitcoin_core_chainstate_dir}" | cut -f1)
+fi
 
 ## This constant will need to be adjusted over time as the chain grows
 ## or need to find how to generate this dynamically in a trustless way.
-archival_node_minimum_in_mib="$((600*1024))"
+archival_node_required_disk_in_gib="600"
 ## The lower this number is, the more likely disk space errors during IBD
 ## The higher this number is, the more nodes prune.
-## The sweet spot is about 50-100 GB more than the current blocks/ + chainstate/ size,
+## The sweet spot is about 50 to 100 GB more than the current blocks/ + chainstate/ size,
 ## which, as of June 2023, is around 522 GiB.
+archival_node_minimum_in_mib=$((archival_node_required_disk_in_gib*1024-blocks_size_in_mib-chainstate_size_in_mib))
 
 if [ ${free_space_in_mib} -ge ${archival_node_minimum_in_mib} ]; then
   echo "  Your node will run as an unpruned full node."
@@ -137,7 +151,7 @@ elif [ ${free_space_in_mib} -lt $((archival_node_minimum_in_mib/80)) ]; then
 else
   if [ ${free_space_in_mib} -lt $((archival_node_minimum_in_mib/40)) ]; then
     echo -e "  Your disk space is low.\n  Setting blocks-only mode and the minimum 0.55 GiB prune."
-    echo "blocksonly=1" >> "${HOME}"/.bitcoin/bitcoin.conf
+    echo "blocksonly=1" >> "${bitcoin_core_data_dir}"/bitcoin.conf
     prune_amount_in_mib="550"
   else
     if [ ${free_space_in_mib} -lt $((archival_node_minimum_in_mib/12)) ]; then
@@ -152,7 +166,7 @@ else
     prune_amount_in_mib=$((free_space_in_mib*prune_ratio/100))
     echo -e "  Pruning to $((prune_amount_in_mib/1024)) GiB (${prune_ratio}% of the free space).\n  You can change this in ~/.bitcoin/bitcoin.conf."
   fi
-  echo "prune=${prune_amount_in_mib}" >> "${HOME}"/.bitcoin/bitcoin.conf
+  echo "prune=${prune_amount_in_mib}" >> "${bitcoin_core_data_dir}"/bitcoin.conf
 fi
 
 echo -n "Starting Bitcoin Core... "
