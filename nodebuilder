@@ -10,6 +10,7 @@ bitcoin_core_extract_dir="${HOME}/bitcoin"
 bitcoin_core_binary_dir="${bitcoin_core_extract_dir}/bin"
 
 bitcoin_core_data_dir="${HOME}/.bitcoin"
+bitcoin_core_config_file="${bitcoin_core_data_dir}/bitcoin.conf"
 bitcoin_core_blocks_dir="${bitcoin_core_data_dir}/blocks"
 bitcoin_core_chainstate_dir="${bitcoin_core_data_dir}/chainstate"
 
@@ -118,7 +119,7 @@ echo "ok."
 
 echo -n "Setting the default node behavior... "
 [ -d "${bitcoin_core_data_dir}"/ ] || mkdir "${bitcoin_core_data_dir}"/
-echo -e "server=1\nmempoolfullrbf=1" > "${bitcoin_core_data_dir}"/bitcoin.conf
+echo -e "server=1\nmempoolfullrbf=1" > "${bitcoin_core_config_file}"
 echo "ok."
 
 echo -n "Checking free space in home directory... "
@@ -151,7 +152,7 @@ elif [ ${free_space_in_mib} -lt $((archival_node_minimum_in_mib/80)) ]; then
 else
   if [ ${free_space_in_mib} -lt $((archival_node_minimum_in_mib/40)) ]; then
     echo -e "  Your disk space is low.\n  Setting blocks-only mode and the minimum 0.55 GiB prune."
-    echo "blocksonly=1" >> "${bitcoin_core_data_dir}"/bitcoin.conf
+    echo "blocksonly=1" >> "${bitcoin_core_config_file}"
     prune_amount_in_mib="550"
   else
     if [ ${free_space_in_mib} -lt $((archival_node_minimum_in_mib/12)) ]; then
@@ -166,7 +167,7 @@ else
     prune_amount_in_mib=$((free_space_in_mib*prune_ratio/100))
     echo -e "  Pruning to $((prune_amount_in_mib/1024)) GiB (${prune_ratio}% of the free space).\n  You can change this in ~/.bitcoin/bitcoin.conf."
   fi
-  echo "prune=${prune_amount_in_mib}" >> "${bitcoin_core_data_dir}"/bitcoin.conf
+  echo "prune=${prune_amount_in_mib}" >> "${bitcoin_core_config_file}"
 fi
 
 echo -n "Starting Bitcoin Core... "
