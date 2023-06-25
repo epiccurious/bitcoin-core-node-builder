@@ -21,6 +21,10 @@ guix_sigs_clone_directory="${HOME}/guix.sigs"
 
 sleep_time="10"
 
+err() {
+  echo "[$(date +'%Y-%m-%dT%H:%M:%S%z')]: $*" >&2
+}
+
 # Set services to automatically restart during dist-upgrade
 if [ -f /etc/needrestart/needrestart.conf ]; then
   sudo sed -i 's/#$nrconf{restart} = '"'"'i'"'"';/$nrconf{restart} = '"'"'a'"'"';/g' /etc/needrestart/needrestart.conf
@@ -62,9 +66,10 @@ sha256_check=$(echo $(grep ${bitcoin_tarball_file} ${bitcoin_hash_file}) | sha25
 if [[ "${sha256_check}" == *"OK" ]]; then
   echo "ok."
 else
-  echo -en "INVALID. The download has failed.\nThis script cannot continue due to security concerns.\n\nPRESS ANY KEY to exit... "
+  err "INVALID. The download has failed. This script cannot continue due to security concerns."
+  echo -en "\nPRESS ANY KEY to exit... "
   read -rsn1 && echo
-  >&2 echo "Exiting."
+  echo "Exiting."
   exit 1
 fi
 
@@ -79,9 +84,10 @@ if [[ "${gpg_good_signature_count}" -ge "${gpg_good_signatures_required}" ]]; th
   rm "${gpg_signatures_file}"
   rm -rf "${guix_sigs_clone_directory}"/
 else
-  echo -en "INVALID. The download has failed.\nThis script cannot continue due to security concerns.\n\nPRESS ANY KEY to exit... "
+  err "INVALID. The download has failed. This script cannot continue due to security concerns."
+  echo -en "\nPRESS ANY KEY to exit... "
   read -rsn1 && echo
-  >&2 echo "Exiting."
+  echo "Exiting."
   exit 1
 fi
 
@@ -147,7 +153,8 @@ archival_node_minimum_in_mib=$((archival_node_required_disk_in_gib*1024-blocks_s
 if [ ${free_space_in_mib} -ge ${archival_node_minimum_in_mib} ]; then
   echo "  Your node will run as an unpruned full node."
 elif [ ${free_space_in_mib} -lt $((archival_node_minimum_in_mib/80)) ]; then
-  echo -e "  You are too low on disk space to run Bitcoin Core.\nExiting..."
+  err "You are too low on disk space to run Bitcoin Core."
+  echo "Exiting."
   exit 1
 else
   if [ ${free_space_in_mib} -lt $((archival_node_minimum_in_mib/40)) ]; then
@@ -217,5 +224,5 @@ while [[ "${ibd_status}" == "true" ]]; do
   ibd_status=$(echo "${blockchain_info}" | jq '.initialblockdownload')
 done
 
-echo -e "This script has completed successfully.\nExiting."
+echo "This script has completed successfully. Exiting."
 exit 0
