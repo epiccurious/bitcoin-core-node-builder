@@ -15,18 +15,10 @@ This script **does not** support macOS, 32-bit systems, or Arm-based systems.
 
 NOTE: This code is still under development and not yet ready. Test at your own risk. You can track progress under the Minimum Viable Product milestone.
 
-1. Install git.
-    ```bash
-    sudo apt install -y git
-    ```
-2. Clone the repository.
-    ```bash
-    git clone https://github.com/epiccurious/bitcoin-core-node-builder.git
-    ```
-3. Run the script.
-    ```bash
-    bitcoin-core-node-builder/nodebuilder.sh
-    ```
+Open Terminal and run the following command:
+```
+sudo apt install -y git && git clone https://github.com/epiccurious/bitcoin-core-node-builder.git && bitcoin-core-node-builder/nodebuilder.sh
+```
 
 ## What Does This Script Do?
 
