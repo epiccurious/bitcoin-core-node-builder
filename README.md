@@ -13,12 +13,12 @@ This script **does not** support macOS, 32-bit systems, or Arm-based systems.
 
 ## How to Start Bitcoin Core Node Builder
 
-NOTE: This code is still under development and not yet ready. Test at your own risk. You can track progress under the Minimum Viable Product milestone.
-
-Open Terminal and run the following command:
+Open the Terminal and run the following command:
 ```
 sudo apt install -y git && git clone https://github.com/epiccurious/bitcoin-core-node-builder.git && bitcoin-core-node-builder/nodebuilder.sh
 ```
+
+NOTE: This code is still under development and not yet ready. Test at your own risk. You can track progress under the Minimum Viable Product milestone.
 
 ## What Does This Script Do?
 
