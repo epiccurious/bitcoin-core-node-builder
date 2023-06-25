@@ -6,8 +6,8 @@ NOTE: This code is still under development and not yet ready. Test at your own r
 
 ## Prerequisites
 
-1. A fresh install of [Ubuntu Desktop LTS](https://ubuntu.com/tutorials/install-ubuntu-desktop) or any other modern Debian-based Linux distribution.
-2. An active internet connection
+1. An active internet connection
+2. A fresh install of any modern Linux distribution based on Debian, such as [Ubuntu Desktop LTS](https://ubuntu.com/tutorials/install-ubuntu-desktop).
 
 This script **does not** support macOS, 32-bit systems, or Arm-based systems.
 
