@@ -26,11 +26,11 @@ The script performs the following actions:
 1. Install system updates, reboot if necessary, then install dependencies.
 2. Download, validate, and extract Bitcoin Core.
 3. Set a prune for Bitcoin Core based on system's disk free space.
-3. Create shortcuts for Bitcoin Core on the desktop and on the "Show Applications" list.
-4. Start Bitcoin Core.
-5. Prevent the system from sleeping, suspending, and hibernating.
-6. While the initial block download proceeds, display relevant info such as the percent synced (e.g. 34%), number of blocks left, and the free disk space remaining.
-7. After the initial block download completes, tell the user that the script has finished then and end the script.
+4. Create shortcuts for Bitcoin Core on the desktop and on the "Show Applications" list.
+5. Start Bitcoin Core.
+6. Prevent the system from sleeping, suspending, and hibernating.
+7. While the initial block download proceeds, display relevant info such as the percent synced (e.g. 34%), number of blocks left, and the free disk space remaining.
+8. After the initial block download completes, tell the user that the script has finished then and end the script.
 
 ## What Files Does This Script Touch?
 
