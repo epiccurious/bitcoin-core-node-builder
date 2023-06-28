@@ -51,9 +51,9 @@ echo "Checking dependencies... "
 sudo apt-get -qq update && sudo apt-get -qq install --assume-yes --no-install-recommends curl git gnupg jq libxcb-xinerama0
 
 echo -n "Downloading Bitcoin Core files... "
-[ -f "${bitcoin_tarball_file}" ] || curl --silent --show-error --location --output "${HOME}"/"${bitcoin_tarball_file}" "${bitcoin_source}"/"${bitcoin_tarball_file}"
-[ -f "${bitcoin_hash_file}" ] || curl --silent --show-error --location --output "${HOME}"/"${bitcoin_hash_file}" "${bitcoin_source}"/"${bitcoin_hash_file}"
-[ -f "${gpg_signatures_file}" ] || curl --silent --show-error --location --output "${HOME}"/"${gpg_signatures_file}" "${bitcoin_source}"/"${gpg_signatures_file}"
+[ -f "${bitcoin_tarball_file}" ] || curl --silent --show-error --location --fail --output "${HOME}"/"${bitcoin_tarball_file}" "${bitcoin_source}"/"${bitcoin_tarball_file}"
+[ -f "${bitcoin_hash_file}" ] || curl --silent --show-error --location --fail --output "${HOME}"/"${bitcoin_hash_file}" "${bitcoin_source}"/"${bitcoin_hash_file}"
+[ -f "${gpg_signatures_file}" ] || curl --silent --show-error --location --fail --output "${HOME}"/"${gpg_signatures_file}" "${bitcoin_source}"/"${gpg_signatures_file}"
 echo "ok."
 
 # Check that the release file's checksum is listed in SHA256SUMS
