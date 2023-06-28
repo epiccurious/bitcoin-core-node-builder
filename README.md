@@ -33,17 +33,19 @@ The script performs the following actions:
 7. While the initial block download proceeds, display relevant info such as the percent synced (e.g. 34%), number of blocks left, and the free disk space remaining.
 8. After the initial block download completes, tell the user that the script has finished and end the script.
 
-## What Files Does This Script Touch?
+## Which Files Does This Script Touch?
 
-The script modifies the following files:
-- Anything affected by upgrading the system and installing dependencies
-- `$HOME/bitcoin-*-x86_64-linux-gnu.tar.gz`, the downloaded Bitcoin Core compressed tarball
-- `$HOME/SHA256SUMS`, the tarball's checksum file
-- `$HOME/SHA256SUMS.asc`, the signatures for the checksum file
-- `$HOME/guix.sigs/`, 
-- `$HOME/bitcoin/`, a user-definable extraction directory
-- `$HOME/.bitcoin/`, the default Bitcoin Core data directory
-- `$HOME/.bitcoin/bitcoin.conf`, the Bitcoin Core configuration file
+Before launching Bitcoin Core, this script modifies the following files:
+- Any files related to installing system updates and dependencies
+- The Bitcoin Core tarball and extract directory
+  - `~/bitcoin-*-x86_64-linux-gnu.tar.gz`
+  - `~/bitcoin/`
+- The Bitcoin Core configuration file
+  - `~/.bitcoin/bitcoin.conf`
+- Temporary support files for verifying the Bitcoin Core download
+  - `~/SHA256SUMS`
+  - `~/SHA256SUMS.asc`
+  - `~/guix.sigs/`
 
 ## Acknowledgements
 
