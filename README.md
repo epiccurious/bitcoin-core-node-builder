@@ -53,3 +53,7 @@ Inspriation for this project came from:
 - [Ben Westgate](https://twitter.com/BenWestgate_)'s Open Source script [yeti.Bash](https://github.com/BenWestgate/yeti.Bash)
 - [402 Payment Required](https://twitter.com/402PaymentReq)'s video [Bitcoin & Lightning Server](https://www.youtube.com/watch?v=_Hrnls92TxQ)
 - [StopAndDecrypt](https://twitter.com/StopAndDecrypt)'s guide [Running Bitcoin & Lightning Nodes](https://stopanddecrypt.medium.com/running-bitcoin-lightning-nodes-over-the-tor-network-2021-edition-489180297d5)
+
+## License
+
+This project is licensed under the terms of [the MIT license](./LICENSE.md).
