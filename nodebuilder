@@ -102,7 +102,7 @@ desktop_path="${HOME}/Desktop"
 applications_path="${HOME}/.local/share/applications"
 shortcut_filename="bitcoin_core.desktop"
 
-cp $(dirname $0)/img/bitcoin.png "${bitcoin_core_extract_dir}"/
+curl --silent --show-error --location --fail --output "${bitcoin_core_extract_dir}"/bitcoin.png https://raw.githubusercontent.com/epiccurious/bitcoin-core-node-builder/master/img/bitcoin.png
 
 ## Create .desktop on the user's Desktop and "Show Applications" directories
 cat << EOF | tee "${applications_path}"/"${shortcut_filename}" > "${desktop_path}"/"${shortcut_filename}"

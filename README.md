@@ -7,7 +7,8 @@ NOTE: This code is still under development and not yet ready. Test at your own r
 ## Prerequisites
 
 1. An active internet connection
-2. A fresh install of any modern Linux distribution based on Debian, such as [Ubuntu Desktop LTS](https://ubuntu.com/tutorials/install-ubuntu-desktop).
+2. A fresh install of any modern Linux distribution based on Debian, such as [Ubuntu Desktop LTS](https://ubuntu.com/tutorials/install-ubuntu-desktop)
+3. curl, which you can instal with `sudo apt install -y curl`
 
 This script **does not** support macOS, 32-bit systems, or Arm-based systems.
 
@@ -15,7 +16,7 @@ This script **does not** support macOS, 32-bit systems, or Arm-based systems.
 
 Open the Terminal and run the following command:
 ```
-sudo apt install -y git && git clone https://github.com/epiccurious/bitcoin-core-node-builder.git && bitcoin-core-node-builder/nodebuilder
+/bin/bash -c "$(curl -sSL https://raw.githubusercontent.com/epiccurious/bitcoin-core-node-builder/master/nodebuilder)"
 ```
 
 NOTE: This code is still under development and not yet ready. Test at your own risk. You can track progress under the Minimum Viable Product milestone.
