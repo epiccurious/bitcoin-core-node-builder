@@ -46,7 +46,7 @@ if [ -f /var/run/reboot-required ]; then
   echo -en "\nREBOOT REQUIRED to upgrade the following:\n$(cat /var/run/reboot-required.pkgs)\n\nPRESS ANY KEY to reboot or press Ctrl+C to exit... "
   read -rsn1 && echo
   echo "Rebooting."
-  reboot
+  sudo reboot
   exit 0
 fi
 
