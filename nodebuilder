@@ -62,7 +62,7 @@ echo "ok."
 
 # Check that the release file's checksum is listed in SHA256SUMS
 echo -n "  Validating the checksum... "
-sha256_check=$(echo $(grep ${bitcoin_tarball_file} ${bitcoin_hash_file}) | sha256sum --check 2>/dev/null)
+sha256_check=$(echo $(grep ${bitcoin_tarball_file} ${bitcoin_hash_file}) | sha256sum --check 2> /dev/null)
 if [[ "${sha256_check}" == *"OK" ]]; then
   echo "ok."
 else
@@ -77,7 +77,7 @@ fi
 echo -n "  Validating the signatures... "
 [ -d "${guix_sigs_clone_directory}"/ ] || git clone --quiet https://github.com/bitcoin-core/guix.sigs.git "${guix_sigs_clone_directory}"
 gpg --quiet --import "${guix_sigs_clone_directory}"/builder-keys/*.gpg
-gpg_good_signature_count=$(gpg --verify "${gpg_signatures_file}"  2>&1 | grep "^gpg: Good signature from " | wc -l)
+gpg_good_signature_count=$(gpg --verify "${gpg_signatures_file}" 2>&1 | grep "^gpg: Good signature from " | wc -l)
 if [[ "${gpg_good_signature_count}" -ge "${gpg_good_signatures_required}" ]]; then
   echo "${gpg_good_signature_count} good."
   rm "${bitcoin_hash_file}"
@@ -130,7 +130,7 @@ echo "ok."
 
 echo -n "Checking free space in home directory... "
 free_space_in_mib=$(df --output=avail --block-size="1MiB" "${HOME}" | sed 1d)
-echo "$((free_space_in_mib/1024)) GiB."
+echo "$((free_space_in_mib / 1024)) GiB."
 
 blocks_size_in_mib="0"
 if [ -d "${bitcoin_core_blocks_dir}"/ ]; then
@@ -148,37 +148,38 @@ archival_node_required_disk_in_gib="600"
 ## The higher this number is, the more nodes prune.
 ## The sweet spot is about 50 to 100 GB more than the current blocks/ + chainstate/ size,
 ## which, as of June 2023, is around 522 GiB.
-archival_node_minimum_in_mib=$((archival_node_required_disk_in_gib*1024-blocks_size_in_mib-chainstate_size_in_mib))
+archival_node_minimum_in_mib=$((archival_node_required_disk_in_gib * 1024 - blocks_size_in_mib - chainstate_size_in_mib))
 
 if [ ${free_space_in_mib} -ge ${archival_node_minimum_in_mib} ]; then
   echo "  Your node will run as an unpruned full node."
-elif [ ${free_space_in_mib} -lt $((archival_node_minimum_in_mib/80)) ]; then
+elif [ ${free_space_in_mib} -lt $((archival_node_minimum_in_mib / 80)) ]; then
   err "You are too low on disk space to run Bitcoin Core."
   echo "Exiting."
   exit 1
 else
-  if [ ${free_space_in_mib} -lt $((archival_node_minimum_in_mib/40)) ]; then
+  if [ ${free_space_in_mib} -lt $((archival_node_minimum_in_mib / 40)) ]; then
     echo -e "  Your disk space is low.\n  Setting blocks-only mode and the minimum 0.55 GiB prune."
     echo "blocksonly=1" >> "${bitcoin_core_config_file}"
     prune_amount_in_mib="550"
   else
-    if [ ${free_space_in_mib} -lt $((archival_node_minimum_in_mib/12)) ]; then
+    if [ ${free_space_in_mib} -lt $((archival_node_minimum_in_mib / 12)) ]; then
       prune_ratio=20
-    elif [ ${free_space_in_mib} -lt $((archival_node_minimum_in_mib/4)) ]; then
+    elif [ ${free_space_in_mib} -lt $((archival_node_minimum_in_mib / 4)) ]; then
       prune_ratio=40
-    elif [ ${free_space_in_mib} -lt $((archival_node_minimum_in_mib*3/4)) ]; then
+    elif [ ${free_space_in_mib} -lt $((archival_node_minimum_in_mib * 3 / 4)) ]; then
       prune_ratio=60
     else
       prune_ratio=80
     fi
-    prune_amount_in_mib=$((free_space_in_mib*prune_ratio/100))
-    echo -e "  Pruning to $((prune_amount_in_mib/1024)) GiB (${prune_ratio}% of the free space).\n  You can change this in ~/.bitcoin/bitcoin.conf."
+    prune_amount_in_mib=$((free_space_in_mib * prune_ratio / 100))
+    echo -e "  Pruning to $((prune_amount_in_mib / 1024)) GiB (${prune_ratio}% of the free space).\n  You can change this in ~/.bitcoin/bitcoin.conf."
   fi
   echo "prune=${prune_amount_in_mib}" >> "${bitcoin_core_config_file}"
 fi
 
 echo -n "Starting Bitcoin Core... "
-"${bitcoin_core_binary_dir}"/bitcoin-qt 2>/dev/null & disown
+"${bitcoin_core_binary_dir}"/bitcoin-qt 2> /dev/null &
+disown
 "${bitcoin_core_binary_dir}"/bitcoin-cli --rpcwait getrpcinfo > /dev/null
 echo "ok."
 
@@ -187,7 +188,7 @@ sudo systemctl mask sleep.target suspend.target hibernate.target hybrid-sleep.ta
 echo "ok."
 
 echo -en "\nClose this Terminal window by clicking on the \"X\".\nThis screen will refresh in ${sleep_time} seconds."
-for (( i=1; i<=sleep_time; i++)); do
+for ((i = 1; i <= sleep_time; i++)); do
   sleep 1
   printf "."
 done
@@ -201,19 +202,19 @@ while [[ "${ibd_status}" == "true" ]]; do
   # Handle case of early sync by replacing scientific notation with decimal
   [[ "${sync_progress}" == *"e"* ]] && sync_progress="0.000000001"
   sync_progress_percent=$(echo "${sync_progress}*100" | bc)
-  
+
   blocks=$(echo "${blockchain_info}" | jq '.blocks')
   headers=$(echo "${blockchain_info}" | jq '.headers')
   last_block_time=$(echo "${blockchain_info}" | jq '.time')
   size_on_disk=$(echo "${blockchain_info}" | jq '.size_on_disk')
-  
+
   # Generate output string, clear the terminal, and print the output
-  sync_status="Sync progress:          $(printf '%.4f' ${sync_progress_percent}) %\nBlocks left to sync:    $((headers-blocks))\nCurrent chain tip:      $(date -d @"${last_block_time}" | cut -c 5-)\n\nEstimated size on disk: $((size_on_disk/1024/1024/1024)) GiB\nEstimated free space:   $(df -h / | tail -1 | awk '{print $4}')iB"
+  sync_status="Sync progress:          $(printf '%.4f' ${sync_progress_percent}) %\nBlocks left to sync:    $((headers - blocks))\nCurrent chain tip:      $(date -d @"${last_block_time}" | cut -c 5-)\n\nEstimated size on disk: $((size_on_disk / 1024 / 1024 / 1024)) GiB\nEstimated free space:   $(df -h / | tail -1 | awk '{print $4}')iB"
   clear
   echo -e "${sync_status}"
-  
+
   echo -en "\nSynchronizing can take weeks on a slow connection.\n\nClose this Terminal window by clicking on the \"X\".\nThis screen will refresh in ${sleep_time} seconds."
-  for (( i=1; i<=sleep_time; i++)); do
+  for ((i = 1; i <= sleep_time; i++)); do
     sleep 1
     printf "."
   done
