@@ -56,4 +56,4 @@ Inspriation for this project came from:
 
 ## License
 
-This project is licensed under the terms of [the MIT license](./LICENSE.md).
+This project is licensed under the terms of [the MIT license](./LICENSE).
