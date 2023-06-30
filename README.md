@@ -47,6 +47,10 @@ Before launching Bitcoin Core, this script modifies the following files:
   - `~/SHA256SUMS.asc`
   - `~/guix.sigs/`
 
+## YouTube Playlist
+
+Follow the changes to this repository on [the YouTube playlist](https://www.youtube.com/playlist?list=PL3dr_BSAPOFSaozbtQ1wZM2enpdJIY_5T).
+
 ## Acknowledgements
 
 Inspriation for this project came from:
