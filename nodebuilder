@@ -16,8 +16,8 @@ gpg_signatures_file_source="${bitcoin_source}/${gpg_signatures_filename}"
 guix_sigs_repo="https://github.com/bitcoin-core/guix.sigs.git"
 
 base58_chars="a-km-zA-HJ-KM-Z1-9"
-tmp_dir="$(cat /dev/urandom | tr -dc ${base58_chars} | fold -w8 | head -n1)"
-bitcoin_tarball_file="${HOME}/${bitcoin_tarball_filename}"
+tmp_dir="/tmp/$(cat /dev/urandom | tr -dc ${base58_chars} | fold -w8 | head -n1)"
+bitcoin_tarball_file="${tmp_dir}/${bitcoin_tarball_filename}"
 bitcoin_hash_file="${tmp_dir}/${bitcoin_hash_filename}"
 gpg_signatures_file="${tmp_dir}/${gpg_signatures_filename}"
 guix_sigs_clone_dir="${tmp_dir}/guix.sigs"
@@ -66,6 +66,7 @@ echo "Checking dependencies... "
 sudo apt-get -qq update && sudo apt-get -qq install --assume-yes --no-install-recommends curl git gnupg jq libxcb-xinerama0
 
 echo -n "Downloading Bitcoin Core files... "
+[ -d "${tmp_dir}" ] || mkdir "${tmp_dir}"/
 [ -f "${bitcoin_tarball_file}" ] || curl --silent --show-error --location --fail --output "${bitcoin_tarball_file}" "${bitcoin_tarball_file_source}"
 [ -f "${bitcoin_hash_file}" ] || curl --silent --show-error --location --fail --output "${bitcoin_hash_file}" "${bitcoin_hash_file_source}"
 [ -f "${gpg_signatures_file}" ] || curl --silent --show-error --location --fail --output "${gpg_signatures_file}" "${gpg_signatures_file_source}"
@@ -73,7 +74,9 @@ echo "ok."
 
 # Check that the release file's checksum is listed in SHA256SUMS
 echo -n "  Validating the checksum... "
-sha256_check=$(echo $(grep ${bitcoin_tarball_file} ${bitcoin_hash_file}) | sha256sum --check 2> /dev/null)
+cd "${tmp_dir}"/
+sha256_check=$(echo $(grep ${bitcoin_tarball_filename} ${bitcoin_hash_filename}) | sha256sum --check 2> /dev/null)
+cd "${HOME}"/
 if [[ "${sha256_check}" == *"OK" ]]; then
   echo "ok."
 else
@@ -94,8 +97,10 @@ if [[ "${gpg_good_signature_count}" -ge "${gpg_good_signatures_required}" ]]; th
   echo "${gpg_good_signature_count} good."
   rm "${bitcoin_hash_file}"
   rm "${gpg_signatures_file}"
-  rm -r "${tmp_dir}"/
   rm -rf "${guix_sigs_clone_dir}"/
+  mv "${bitcoin_tarball_file}" "${HOME}"/"${bitcoin_tarball_filename}"
+  bitcoin_tarball_file="${HOME}/${bitcoin_tarball_filename}"
+  rm -r "${tmp_dir}"/
 else
   err "INVALID. The download has failed. This script cannot continue due to security concerns."
   err "Please review the temporary file ${tmp_dir}/${gpg_signatures_file}."
