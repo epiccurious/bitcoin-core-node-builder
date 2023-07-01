@@ -6,7 +6,21 @@ set -e
 bitcoin_version="25.0"
 bitcoin_source="https://bitcoincore.org/bin/bitcoin-core-${bitcoin_version}"
 bitcoin_tarball_filename="bitcoin-${bitcoin_version}-x86_64-linux-gnu.tar.gz"
+bitcoin_hash_filename="SHA256SUMS"
+gpg_signatures_filename="SHA256SUMS.asc"
+gpg_good_signatures_required="7"
+
+bitcoin_tarball_file_source="${bitcoin_source}/${bitcoin_tarball_filename}"
+bitcoin_hash_file_source="${bitcoin_source}/${bitcoin_hash_filename}"
+gpg_signatures_file_source="${bitcoin_source}/${gpg_signatures_filename}"
+guix_sigs_repo="https://github.com/bitcoin-core/guix.sigs.git"
+
+base58_chars="a-km-zA-HJ-KM-Z1-9"
+tmp_dir="$(cat /dev/urandom | tr -dc ${base58_chars} | fold -w8 | head -n1)"
 bitcoin_tarball_file="${HOME}/${bitcoin_tarball_filename}"
+bitcoin_hash_file="${tmp_dir}/${bitcoin_hash_filename}"
+gpg_signatures_file="${tmp_dir}/${gpg_signatures_filename}"
+guix_sigs_clone_dir="${tmp_dir}/guix.sigs"
 
 bitcoin_core_extract_dir="${HOME}/bitcoin"
 bitcoin_core_binary_dir="${bitcoin_core_extract_dir}/bin"
@@ -15,16 +29,6 @@ bitcoin_core_data_dir="${HOME}/.bitcoin"
 bitcoin_core_config_file="${bitcoin_core_data_dir}/bitcoin.conf"
 bitcoin_core_blocks_dir="${bitcoin_core_data_dir}/blocks"
 bitcoin_core_chainstate_dir="${bitcoin_core_data_dir}/chainstate"
-
-bitcoin_hash_filename="SHA256SUMS"
-gpg_signatures_filename="SHA256SUMS.asc"
-gpg_good_signatures_required="7"
-
-base58_chars="a-km-zA-HJ-KM-Z1-9"
-tmp_dir="$(cat /dev/urandom | tr -dc ${base58_chars} | fold -w8 | head -n1)"
-bitcoin_hash_file="${tmp_dir}/${bitcoin_hash_filename}"
-gpg_signatures_file="${tmp_dir}/${gpg_signatures_filename}"
-guix_sigs_clone_directory="${tmp_dir}/guix.sigs"
 
 sleep_time="10"
 
@@ -62,9 +66,9 @@ echo "Checking dependencies... "
 sudo apt-get -qq update && sudo apt-get -qq install --assume-yes --no-install-recommends curl git gnupg jq libxcb-xinerama0
 
 echo -n "Downloading Bitcoin Core files... "
-[ -f "${bitcoin_tarball_file}" ] || curl --silent --show-error --location --fail --output "${bitcoin_tarball_file}" "${bitcoin_source}"/"${bitcoin_tarball_filename}"
-[ -f "${bitcoin_hash_file}" ] || curl --silent --show-error --location --fail --output "${bitcoin_hash_file}" "${bitcoin_source}"/"${bitcoin_hash_filename}"
-[ -f "${gpg_signatures_file}" ] || curl --silent --show-error --location --fail --output "${gpg_signatures_file}" "${bitcoin_source}"/"${gpg_signatures_filename}"
+[ -f "${bitcoin_tarball_file}" ] || curl --silent --show-error --location --fail --output "${bitcoin_tarball_file}" "${bitcoin_tarball_file_source}"
+[ -f "${bitcoin_hash_file}" ] || curl --silent --show-error --location --fail --output "${bitcoin_hash_file}" "${bitcoin_hash_file_source}"
+[ -f "${gpg_signatures_file}" ] || curl --silent --show-error --location --fail --output "${gpg_signatures_file}" "${gpg_signatures_file_source}"
 echo "ok."
 
 # Check that the release file's checksum is listed in SHA256SUMS
@@ -83,15 +87,15 @@ fi
 
 # Check the PGP signatures of SHA256SUMS
 echo -n "  Validating the signatures... "
-[ -d "${guix_sigs_clone_directory}"/ ] || git clone --quiet https://github.com/bitcoin-core/guix.sigs.git "${guix_sigs_clone_directory}"
-gpg --quiet --import "${guix_sigs_clone_directory}"/builder-keys/*.gpg
+[ -d "${guix_sigs_clone_dir}"/ ] || git clone --quiet "${guix_sigs_repo}" "${guix_sigs_clone_dir}"
+gpg --quiet --import "${guix_sigs_clone_dir}"/builder-keys/*.gpg
 gpg_good_signature_count=$(gpg --verify "${gpg_signatures_file}" 2>&1 | grep "^gpg: Good signature from " | wc -l)
 if [[ "${gpg_good_signature_count}" -ge "${gpg_good_signatures_required}" ]]; then
   echo "${gpg_good_signature_count} good."
   rm "${bitcoin_hash_file}"
   rm "${gpg_signatures_file}"
   rm -r "${tmp_dir}"/
-  rm -rf "${guix_sigs_clone_directory}"/
+  rm -rf "${guix_sigs_clone_dir}"/
 else
   err "INVALID. The download has failed. This script cannot continue due to security concerns."
   err "Please review the temporary file ${tmp_dir}/${gpg_signatures_file}."
