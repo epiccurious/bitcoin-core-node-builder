@@ -29,8 +29,7 @@ shfmt -i 2 -sr -d ~/Documents/GitHub/bitcoin-core-node-builder/nodebuilder
 
 During the review period, open pull requests should be manually tested to ensure:
 1. The change actually fixes the issue
-2. The change doesn't induce any bugs
-
+2. The change doesn't cause unintentional bugs
 
 ### Major Code Changes
 
