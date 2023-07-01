@@ -19,12 +19,12 @@ bitcoin_core_chainstate_dir="${bitcoin_core_data_dir}/chainstate"
 bitcoin_hash_filename="SHA256SUMS"
 gpg_signatures_filename="SHA256SUMS.asc"
 gpg_good_signatures_required="7"
-guix_sigs_clone_directory="${HOME}/guix.sigs"
 
 base58_chars="a-km-zA-HJ-KM-Z1-9"
 tmp_dir="$(cat /dev/urandom | tr -dc ${base58_chars} | fold -w8 | head -n1)"
 bitcoin_hash_file="${tmp_dir}/${bitcoin_hash_filename}"
 gpg_signatures_file="${tmp_dir}/${gpg_signatures_filename}"
+guix_sigs_clone_directory="${tmp_dir}/guix.sigs"
 
 sleep_time="10"
 
