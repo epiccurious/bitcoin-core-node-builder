@@ -183,19 +183,23 @@ disown
 "${bitcoin_core_binary_dir}"/bitcoin-cli --rpcwait getrpcinfo > /dev/null
 echo "ok."
 
-echo -n "Disabling system sleep, suspend, and hibernate... "
-sudo systemctl mask sleep.target suspend.target hibernate.target hybrid-sleep.target &> /dev/null
-echo "ok."
-
-echo -en "\nClose this Terminal window by clicking on the \"X\".\nThis screen will refresh in ${sleep_time} seconds."
-for ((i = 1; i <= sleep_time; i++)); do
-  sleep 1
-  printf "."
-done
-echo
-
 blockchain_info=$("${bitcoin_core_binary_dir}"/bitcoin-cli --rpcwait getblockchaininfo)
 ibd_status=$(echo "${blockchain_info}" | jq '.initialblockdownload')
+
+if [[ "${ibd_status}" == "true" ]]; then
+  echo -n "Disabling system sleep, suspend, and hibernate... "
+  sudo systemctl mask sleep.target suspend.target hibernate.target hybrid-sleep.target &> /dev/null
+  echo "ok."
+
+  echo -en "\nClose this Terminal window by clicking on the \"X\".\nThis screen will refresh in ${sleep_time} seconds."
+  for ((i = 1; i <= sleep_time; i++)); do
+    sleep 1
+    printf "."
+  done
+  echo
+else
+  echo "  Your node has already completed the Initial Block Download."
+fi
 
 while [[ "${ibd_status}" == "true" ]]; do
   sync_progress=$(echo "${blockchain_info}" | jq '.verificationprogress')
