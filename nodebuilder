@@ -19,6 +19,9 @@ gpg_signatures_file="SHA256SUMS.asc"
 gpg_good_signatures_required="7"
 guix_sigs_clone_directory="${HOME}/guix.sigs"
 
+base58_chars="a-km-zA-HJ-KM-Z1-9"
+random_dir="$(cat /dev/urandom | tr -dc ${base58_chars} | fold -w8 | head -n1)"
+
 sleep_time="10"
 
 err() {
