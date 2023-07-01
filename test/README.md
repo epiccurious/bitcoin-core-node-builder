@@ -18,6 +18,8 @@ To validate changes against `shellcheck`, run the following command:
 shellcheck ~/Documents/GitHub/bitcoin-core-node-builder/nodebuilder
 ```
 
+Alternatively, [a VSCode extension to integrate ShellCheck](https://github.com/vscode-shellcheck/vscode-shellcheck) can simplify the process.
+
 ### How to Use shfmt
 
 To validate changes against `shellcheck`, run the following command:
