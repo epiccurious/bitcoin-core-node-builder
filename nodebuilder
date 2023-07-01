@@ -74,6 +74,7 @@ if [[ "${sha256_check}" == *"OK" ]]; then
   echo "ok."
 else
   err "INVALID. The download has failed. This script cannot continue due to security concerns."
+  err "Please review the temporary file ${tmp_dir}/${bitcoin_hash_file}."
   echo -en "\nPRESS ANY KEY to exit... "
   read -rsn1 && echo
   echo "Exiting."
@@ -93,6 +94,7 @@ if [[ "${gpg_good_signature_count}" -ge "${gpg_good_signatures_required}" ]]; th
   rm -rf "${guix_sigs_clone_directory}"/
 else
   err "INVALID. The download has failed. This script cannot continue due to security concerns."
+  err "Please review the temporary file ${tmp_dir}/${gpg_signatures_file}."
   echo -en "\nPRESS ANY KEY to exit... "
   read -rsn1 && echo
   echo "Exiting."
