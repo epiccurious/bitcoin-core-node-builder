@@ -16,7 +16,7 @@ gpg_signatures_file_source="${bitcoin_source}/${gpg_signatures_filename}"
 guix_sigs_repo="https://github.com/bitcoin-core/guix.sigs.git"
 
 base58_chars="a-km-zA-HJ-KM-Z1-9"
-tmp_dir="/tmp/$(cat /dev/urandom | tr -dc ${base58_chars} | fold -w8 | head -n1)"
+tmp_dir="/tmp/$(tr -dc ${base58_chars} < /dev/urandom | fold -w8 | head -n1)"
 bitcoin_tarball_file="${tmp_dir}/${bitcoin_tarball_filename}"
 bitcoin_hash_file="${tmp_dir}/${bitcoin_hash_filename}"
 gpg_signatures_file="${tmp_dir}/${gpg_signatures_filename}"
@@ -75,7 +75,7 @@ echo "ok."
 # Check that the release file's checksum is listed in SHA256SUMS
 echo -n "  Validating the checksum... "
 cd "${tmp_dir}"/
-sha256_check=$(echo $(grep ${bitcoin_tarball_filename} ${bitcoin_hash_filename}) | sha256sum --check 2> /dev/null)
+sha256_check=$(grep ${bitcoin_tarball_filename} ${bitcoin_hash_filename} | sha256sum --check 2> /dev/null)
 cd "${HOME}"/
 if [[ "${sha256_check}" == *"OK" ]]; then
   echo "ok."
@@ -92,15 +92,15 @@ fi
 echo -n "  Validating the signatures... "
 [ -d "${guix_sigs_clone_dir}"/ ] || git clone --quiet "${guix_sigs_repo}" "${guix_sigs_clone_dir}"
 gpg --quiet --import "${guix_sigs_clone_dir}"/builder-keys/*.gpg
-gpg_good_signature_count=$(gpg --verify "${gpg_signatures_file}" 2>&1 | grep "^gpg: Good signature from " | wc -l)
+gpg_good_signature_count=$(gpg --verify "${gpg_signatures_file}" 2>&1 | grep -c "^gpg: Good signature from ")
 if [[ "${gpg_good_signature_count}" -ge "${gpg_good_signatures_required}" ]]; then
   echo "${gpg_good_signature_count} good."
   rm "${bitcoin_hash_file}"
   rm "${gpg_signatures_file}"
-  rm -rf "${guix_sigs_clone_dir}"/
+  rm -rf "${guix_sigs_clone_dir:?}"/
   mv "${bitcoin_tarball_file}" "${HOME}"/"${bitcoin_tarball_filename}"
   bitcoin_tarball_file="${HOME}/${bitcoin_tarball_filename}"
-  rm -r "${tmp_dir}"/
+  rm -r "${tmp_dir:?}"/
 else
   err "INVALID. The download has failed. This script cannot continue due to security concerns."
   err "Please review the temporary file ${tmp_dir}/${gpg_signatures_file}."
