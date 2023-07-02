@@ -1,0 +1,33 @@
+name: Bash CI
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+  workflow_dispatch:
+
+jobs:
+  shellcheck:
+    name: shellcheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run ShellCheck on nodebuilder
+        uses: ludeeus/action-shellcheck@master
+        with:
+          #ignore_names: offloadcoredata usei2p usetor
+          scan_dir: './'
+  shfmt-checker:
+    name: shfmt
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run shfmt on nodebuilder
+        uses: luizm/action-sh-checker@master
+        env:
+          SHFMT_OPTS: -i 2 -sr
+        with:
+          sh_checker_shellcheck_disable: true
+          sh_checker_exclude: offloadcoredata usei2p usetor
