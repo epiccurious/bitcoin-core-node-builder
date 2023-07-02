@@ -1,4 +1,4 @@
-name: CI
+name: Bash Validation CI
 
 on:
   push:
@@ -9,8 +9,20 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
-    name: ShellCheck
+  sh-checker:
+    name: shfmt action
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run shfmt on nodebuilder
+        uses: luizm/action-sh-checker@master
+        env:
+          SHFMT_OPTS: -i 2 -sr
+        with:
+          sh_checker_shellcheck_disable: true
+          sh_checker_exclude: offloadcoredata usei2p usetor
+  shellcheck:
+    name: ShellCheck action
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
