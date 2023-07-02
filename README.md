@@ -58,6 +58,7 @@ Inspriation for this project came from:
 - [Yeti Wallet](https://github.com/JWWeatherman/yeticold/graphs/contributors) Open Source project
 - [Addy Yeow](https://github.com/ayeowch/)'s Open Source script [install-full-node.sh](https://bitnodes.io/install-full-node.sh)
 - [Ben Westgate](https://twitter.com/BenWestgate_)'s Open Source script [yeti.Bash](https://github.com/BenWestgate/yeti.Bash)
+- [ArmanTheParman](https://twitter.com/parman_the)'s Open Source script [Parmanode](https://github.com/armantheparman/parmanode)
 - [402 Payment Required](https://twitter.com/402PaymentReq)'s video [Bitcoin & Lightning Server](https://www.youtube.com/watch?v=_Hrnls92TxQ)
 - [StopAndDecrypt](https://twitter.com/StopAndDecrypt)'s guide [Running Bitcoin & Lightning Nodes](https://stopanddecrypt.medium.com/running-bitcoin-lightning-nodes-over-the-tor-network-2021-edition-489180297d5)
 
