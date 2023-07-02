@@ -1,4 +1,4 @@
-name: Bash Validation CI
+name: Bash CI
 
 on:
   push:
@@ -10,7 +10,7 @@ on:
 
 jobs:
   shellcheck:
-    name: shellcheck action
+    name: shellcheck
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -20,7 +20,7 @@ jobs:
           #ignore_names: offloadcoredata usei2p usetor
           scan_dir: './'
   shfmt-checker:
-    name: shfmt action
+    name: shfmt
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
