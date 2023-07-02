@@ -198,7 +198,7 @@ if [[ "${ibd_status}" == "true" ]]; then
   done
   echo
 else
-  echo "  Your node has already completed the Initial Block Download."
+  echo "  Your node has already synced the blockchain."
 fi
 
 while [[ "${ibd_status}" == "true" ]]; do
