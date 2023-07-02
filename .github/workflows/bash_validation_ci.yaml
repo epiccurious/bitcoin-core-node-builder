@@ -22,7 +22,7 @@ jobs:
           sh_checker_shellcheck_disable: true
           sh_checker_exclude: offloadcoredata usei2p usetor
   shellcheck:
-    name: ShellCheck action
+    name: shellcheck action
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
