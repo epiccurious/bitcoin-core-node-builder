@@ -141,7 +141,7 @@ if [ -d "${bitcoin_core_chainstate_dir}"/ ]; then
   chainstate_size_in_mib=$(du -d0 --block-size="1MiB" "${bitcoin_core_chainstate_dir}" | cut -f1)
 fi
 
-data_already_synced_in_mb=$((blocks_size_in_mb + chainstate_size_in_mb))
+data_already_synced_in_mib=$((blocks_size_in_mib + chainstate_size_in_mib))
 
 ## This constant will need to be adjusted over time as the chain grows
 ## or need to find how to generate this dynamically in a trustless way.
@@ -152,23 +152,23 @@ archival_node_required_disk_in_gib="600"
 ## which, as of June 2023, is around 522 GiB.
 archival_node_minimum_in_mib=$((archival_node_required_disk_in_gib * 1024))
 
-if [ ${free_space_in_mib} -ge $((archival_node_minimum_in_mib - data_already_synced_in_mb)) ]; then
+if [ ${free_space_in_mib} -ge $((archival_node_minimum_in_mib - data_already_synced_in_mib)) ]; then
   echo "  Your node will run as an unpruned full node."
-elif [ ${free_space_in_mib} -lt $((archival_node_minimum_in_mib / 80 - data_already_synced_in_mb)) ]; then
+elif [ ${free_space_in_mib} -lt $((archival_node_minimum_in_mib / 80 - data_already_synced_in_mib)) ]; then
   err "You are too low on disk space to run Bitcoin Core."
   echo "Exiting."
   exit 1
 else
-  if [ ${free_space_in_mib} -lt $((archival_node_minimum_in_mib / 40 - data_already_synced_in_mb)) ]; then
+  if [ ${free_space_in_mib} -lt $((archival_node_minimum_in_mib / 40 - data_already_synced_in_mib)) ]; then
     echo -e "  Your disk space is low.\n  Setting blocks-only mode and the minimum 0.55 GiB prune."
     echo "blocksonly=1" >> "${bitcoin_core_config_file}"
     prune_amount_in_mib="550"
   else
-    if [ ${free_space_in_mib} -lt $((archival_node_minimum_in_mib / 12 - data_already_synced_in_mb)) ]; then
+    if [ ${free_space_in_mib} -lt $((archival_node_minimum_in_mib / 12 - data_already_synced_in_mib)) ]; then
       prune_ratio=20
-    elif [ ${free_space_in_mib} -lt $((archival_node_minimum_in_mib / 4 - data_already_synced_in_mb)) ]; then
+    elif [ ${free_space_in_mib} -lt $((archival_node_minimum_in_mib / 4 - data_already_synced_in_mib)) ]; then
       prune_ratio=40
-    elif [ ${free_space_in_mib} -lt $((archival_node_minimum_in_mib * 3 / 4 - data_already_synced_in_mb)) ]; then
+    elif [ ${free_space_in_mib} -lt $((archival_node_minimum_in_mib * 3 / 4 - data_already_synced_in_mib)) ]; then
       prune_ratio=60
     else
       prune_ratio=80
