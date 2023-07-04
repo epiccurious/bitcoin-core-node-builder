@@ -4,6 +4,16 @@ Create a secure Bitcoin Core node with ease.
 
 NOTE: This code is still under development and not yet ready. Test at your own risk. You can track progress under the Minimum Viable Product milestone.
 
+## Table of Contents
+
+- [Prerequisites](#prerequisites)
+- [How to Start Bitcoin Core Node Builder](#how-to-start-bitcoin-core-node-builder)
+- [What Does This Script Do?](#what-does-this-script-do)
+- [Which Files Does This Script Touch?](#which-files-does-this-script-touch)
+- [YouTube Playlist](#youtube-playlist)
+- [Acknowledgements](#acknowledgements)
+- [License](#license)
+
 ## Prerequisites
 
 1. An active internet connection
