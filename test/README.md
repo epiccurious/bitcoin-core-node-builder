@@ -1,25 +1,34 @@
 # Test Procedures
 
-This directory outlines the procedures that test `bitcoin-core-node-builder` scripts.
+This page outlines the procedures to test `bitcoin-core-node-builder` scripts.
 
-## Automated Validation for Code Changes
+## Table of Contents
+- [Automated Validation](#automated-validation-for-code-changes)
+  - [Details About the Validation Tools](#details-about-the-validation-tools)
+  - [How to Use ShellCheck](#how-to-use-shellcheck)
+  - [How to Use shfmt](#how-to-use-shfmt)
+- [Manual Testing](#manual-testing-for-code-changes)
+  - [Major Code Changes](#major-code-changes)
+  - [Minor Code Changes](#minor-code-changes)
 
-Before you open a pull request to master, you should validate your code against two third-party shell tools.
+## Automated Validation
 
-After you open a pull request to master, GitHub Actions CI will [automatically run these checks](https://github.com/epiccurious/bitcoin-core-node-builder/actions/workflows/bash_validation_ci.yaml).
+_**Before**_ opening a pull request, you must validate your code changes against two third-party shell tools: `shellcheck` and `shfmt`.
 
-Add the tools to your environment with:
-```bash
-sudo apt install -y shellcheck shfmt
-```
+_**After**_ opening a pull request, GitHub Actions CI will [automatically run `shellcheck` and `shfmt`](https://github.com/epiccurious/bitcoin-core-node-builder/actions/workflows/bash_validation_ci.yaml) for you.
 
-### How to Use shellcheck
+### Details About the Validation Tools
 
 [`ShellCheck`](https://www.shellcheck.net/) gives warnings and suggestions for bash/sh shell scripts, including:
 - typical beginner's syntax issues that cause a shell to give cryptic error messages
 - typical intermediate level semantic problems that cause a shell to behave strangely and counter-intuitively.
 - subtle caveats, corner cases and pitfalls that may cause an advanced user's otherwise working script to fail under future circumstances.
 
+[`shfmt`](https://github.com/mvdan/sh) formats shell programs. `shfmt`'s default shell formatting was chosen to be consistent, common, and predictable.
+
+You can add the packages to your local environment with `sudo apt install -y shellcheck shfmt`.
+
+### How to Use ShellCheck
 
 To validate changes against `shellcheck`, run the following command:
 ```bash
@@ -30,14 +39,12 @@ Alternatively, [a VSCode extension to integrate ShellCheck](https://github.com/v
 
 ### How to Use shfmt
 
-[`shfmt`](https://github.com/mvdan/sh) formats shell programs. `shfmt`'s default shell formatting was chosen to be consistent, common, and predictable.
-
 To validate changes against `shellcheck`, run the following command:
 ```bash
 shfmt -i 2 -sr -d ~/Documents/GitHub/bitcoin-core-node-builder/nodebuilder
 ```
 
-## Manual Testing for Code Changes
+## Manual Testing
 
 During the review period, open pull requests should be manually tested to ensure:
 1. The change actually fixes the issue
