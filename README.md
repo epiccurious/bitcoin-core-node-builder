@@ -64,4 +64,4 @@ Inspiration for this project came from:
 
 ## License
 
-This project is licensed under the terms of [the MIT-0 license](./LICENSE).
+This project is licensed under the terms of [the MIT No Attribution license](./LICENSE).
