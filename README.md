@@ -8,7 +8,7 @@ NOTE: This code is still under development and not yet ready. Test at your own r
 
 1. An active internet connection
 2. A fresh install of any modern Linux distribution based on Debian, such as [Ubuntu Desktop LTS](https://ubuntu.com/tutorials/install-ubuntu-desktop)
-3. curl, which you can instal with `sudo apt install -y curl`
+3. curl, which you can install with `sudo apt install -y curl`
 
 This script **does not** support macOS, 32-bit systems, or Arm-based systems.
 
@@ -53,7 +53,7 @@ Follow the changes to this repository on [the YouTube playlist](https://www.yout
 
 ## Acknowledgements
 
-Inspriation for this project came from:
+Inspiration for this project came from:
 - [Bitcoin Core](https://github.com/bitcoin/bitcoin/graphs/contributors) Open Source project
 - [Yeti Wallet](https://github.com/JWWeatherman/yeticold/graphs/contributors) Open Source project
 - [Addy Yeow](https://github.com/ayeowch/)'s Open Source script [install-full-node.sh](https://bitnodes.io/install-full-node.sh)

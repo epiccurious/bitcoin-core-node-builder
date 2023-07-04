@@ -1,6 +1,6 @@
 # Test Procedures
 
-This directory outlines the procedures that test `bitcon-core-node-builder` scripts.
+This directory outlines the procedures that test `bitcoin-core-node-builder` scripts.
 
 ## Testing for Major Code Changes
 
