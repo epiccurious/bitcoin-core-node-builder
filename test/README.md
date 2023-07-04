@@ -8,6 +8,8 @@ For major changes to the code or for Bitcoin Core version upgrades, perform a fu
 - Ubuntu Desktop LTS running on bare metal
 - Debian 12 running on a Proxmox virtual machine
 
+[broken link](https://asdflkdsafjlkdsafjoixciouvxlkcjv.com)
+
 ## Testing for Minor Code Changes
 
 For minor changes, each pull request should be tested on Ubuntu Desktop according to the following procedure:
