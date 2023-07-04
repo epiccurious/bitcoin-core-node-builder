@@ -10,7 +10,7 @@ NOTE: This code is still under development and not yet ready. Test at your own r
 2. A fresh install of any modern Linux distribution based on Debian, such as [Ubuntu Desktop LTS](https://ubuntu.com/tutorials/install-ubuntu-desktop)
 3. curl, which you can install with `sudo apt install -y curl`
 
-This script **does not** support macOS, 32-bit systems, or Arm-based systems.
+This script **does not** support macOS, 32-bit operating systems, or Arm-based hardware.
 
 ## How to Start Bitcoin Core Node Builder
 
