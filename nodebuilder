@@ -15,8 +15,8 @@ bitcoin_hash_file_source="${bitcoin_source}/${bitcoin_hash_filename}"
 gpg_signatures_file_source="${bitcoin_source}/${gpg_signatures_filename}"
 guix_sigs_repo="https://github.com/bitcoin-core/guix.sigs.git"
 
-base58_chars="a-km-zA-HJ-KM-Z1-9"
-tmp_dir="/tmp/$(tr -dc ${base58_chars} < /dev/urandom | fold -w8 | head -n1)"
+tmp_dir="$(mktemp -d)"
+trap 'rm -rf -- "$tmp_dir"' EXIT
 bitcoin_tarball_file="${tmp_dir}/${bitcoin_tarball_filename}"
 bitcoin_hash_file="${tmp_dir}/${bitcoin_hash_filename}"
 gpg_signatures_file="${tmp_dir}/${gpg_signatures_filename}"
