@@ -22,7 +22,7 @@ bitcoin_tarball_destination_file="${HOME}/Downloads/${bitcoin_tarball_filename}"
 bitcoin_hash_file="${tmp_dir}/${bitcoin_hash_filename}"
 gpg_signatures_file="${tmp_dir}/${gpg_signatures_filename}"
 guix_sigs_temporary_dir="${tmp_dir}/guix.sigs"
-guix_sigs_final_dir="${tmp_dir}/Downloads/guix.sigs"
+guix_sigs_destination_dir="${tmp_dir}/Downloads/guix.sigs"
 
 bitcoin_core_extract_dir="${HOME}/bitcoin"
 bitcoin_core_binary_dir="${bitcoin_core_extract_dir}/bin"
@@ -67,7 +67,7 @@ fi
 echo "Checking dependencies... "
 sudo apt-get -qq update && sudo apt-get -qq install --assume-yes --no-install-recommends curl git gnupg jq libxcb-xinerama0
 
-echo -n "Checking for Bitcoin Core download... "
+echo -n "Checking for Bitcoin Core... "
 if [ ! -f "${bitcoin_tarball_destination_file}" ]; then
   curl --silent --show-error --location --fail --output "${bitcoin_tarball_temporary_file}" "${bitcoin_tarball_file_source}"
   curl --silent --show-error --location --fail --output "${bitcoin_hash_file}" "${bitcoin_hash_file_source}"
