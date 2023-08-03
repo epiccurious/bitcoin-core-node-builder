@@ -2,7 +2,7 @@
 
 Create a secure Bitcoin Core node with ease.
 
-NOTE: This code is still under development and not yet ready. Test at your own risk. You can track progress under the Minimum Viable Product milestone.
+NOTE: This code is still under development and not yet ready. Test at your own risk. You can track progress under [the Minimum Viable Product milestone](https://github.com/epiccurious/bitcoin-core-node-builder/milestone/1).
 
 ## Table of Contents
 
@@ -17,7 +17,7 @@ NOTE: This code is still under development and not yet ready. Test at your own r
 ## Prerequisites
 
 1. An active internet connection
-2. A fresh install of any modern Linux distribution based on Debian, such as [Ubuntu Desktop LTS](https://ubuntu.com/tutorials/install-ubuntu-desktop)
+2. A fresh install of any modern Linux distribution based on Debian like [Ubuntu Desktop LTS](https://ubuntu.com/tutorials/install-ubuntu-desktop)
 3. curl, which you can install with `sudo apt install -y curl`
 
 This script **does not** support macOS, 32-bit operating systems, or Arm-based hardware.
@@ -29,7 +29,7 @@ Open the Terminal and run the following command:
 /bin/bash -c "$(curl -sSL https://raw.githubusercontent.com/epiccurious/bitcoin-core-node-builder/master/nodebuilder)"
 ```
 
-NOTE: This code is still under development and not yet ready. Test at your own risk. You can track progress under the Minimum Viable Product milestone.
+NOTE: This code is still under development and not yet ready. Test at your own risk. You can track progress under [the Minimum Viable Product milestone](https://github.com/epiccurious/bitcoin-core-node-builder/milestone/1).
 
 ## What Does This Script Do?
 
@@ -63,14 +63,16 @@ Follow the changes to this repository on [the YouTube playlist](https://www.yout
 
 ## Acknowledgements
 
-Inspiration for this project came from:
-- [Bitcoin Core](https://github.com/bitcoin/bitcoin/graphs/contributors) Open Source project
-- [Yeti Wallet](https://github.com/JWWeatherman/yeticold/graphs/contributors) Open Source project
-- [Addy Yeow](https://github.com/ayeowch/)'s Open Source script [install-full-node.sh](https://bitnodes.io/install-full-node.sh)
-- [Ben Westgate](https://github.com/BenWestgate)'s Open Source script [yeti.Bash](https://github.com/BenWestgate/yeti.Bash)
-- [ArmanTheParman](https://github.com/armantheparman)'s Open Source script [Parmanode](https://github.com/armantheparman/parmanode)
-- [402 Payment Required](https://www.youtube.com/@402PaymentRequired)'s video [Bitcoin & Lightning Server](https://www.youtube.com/watch?v=_Hrnls92TxQ)
-- [StopAndDecrypt](https://stopanddecrypt.medium.com/)'s guide [Running Bitcoin & Lightning Nodes](https://stopanddecrypt.medium.com/running-bitcoin-lightning-nodes-over-the-tor-network-2021-edition-489180297d5)
+Inspiration for this project came from the following Open Source projects:
+- [Bitcoin Core](https://github.com/bitcoin/bitcoin/graphs/contributors)
+- [Yeti Wallet](https://github.com/JWWeatherman/yeticold/graphs/contributors)
+- [Bails](https://github.com/BenWestgate/Bails) and [yeti.Bash](https://github.com/BenWestgate/yeti.Bash) by [Ben Westgate](https://github.com/BenWestgate)
+- [install-full-node.sh](https://bitnodes.io/install-full-node.sh) by [Addy Yeow](https://github.com/ayeowch/)
+- [Parmanode](https://github.com/armantheparman/parmanode) by [ArmanTheParman](https://github.com/armantheparman)
+
+And from the following configuration guides:
+- [Bitcoin & Lightning Server](https://www.youtube.com/watch?v=_Hrnls92TxQ) by [402 Payment Required](https://www.youtube.com/@402PaymentRequired)
+- [Running Bitcoin & Lightning Nodes](https://stopanddecrypt.medium.com/running-bitcoin-lightning-nodes-over-the-tor-network-2021-edition-489180297d5) by [StopAndDecrypt](https://stopanddecrypt.medium.com/)
 
 ## License
 
