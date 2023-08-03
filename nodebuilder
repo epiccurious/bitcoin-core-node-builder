@@ -22,7 +22,7 @@ bitcoin_tarball_destination_file="${HOME}/Downloads/${bitcoin_tarball_filename}"
 bitcoin_hash_file="${tmp_dir}/${bitcoin_hash_filename}"
 gpg_signatures_file="${tmp_dir}/${gpg_signatures_filename}"
 guix_sigs_temporary_dir="${tmp_dir}/guix.sigs"
-guix_sigs_destination_dir="${tmp_dir}/Downloads/guix.sigs"
+guix_sigs_destination_dir="${HOME}/Downloads/guix.sigs"
 
 bitcoin_core_extract_dir="${HOME}/bitcoin"
 bitcoin_core_binary_dir="${bitcoin_core_extract_dir}/bin"
