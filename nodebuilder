@@ -91,13 +91,18 @@ if [ ! -f "${bitcoin_tarball_destination_file}" ]; then
 
   # Check the PGP signatures of SHA256SUMS
   echo -n "  Validating the signatures... "
-  [ -d "${guix_sigs_destination_dir}"/ ] || git clone --quiet "${guix_sigs_repo}" "${guix_sigs_temporary_dir}"
-  gpg --quiet --import "${guix_sigs_temporary_dir}"/builder-keys/*.gpg
+  if [ -d "${guix_sigs_destination_dir}"/ ]; then
+    gpg --quiet --import "${guix_sigs_destination_dir}"/builder-keys/*.gpg
+  else
+    git clone --quiet "${guix_sigs_repo}" "${guix_sigs_temporary_dir}"
+    gpg --quiet --import "${guix_sigs_temporary_dir}"/builder-keys/*.gpg
+  fi
+
   gpg_good_signature_count=$(gpg --verify "${gpg_signatures_file}" 2>&1 | grep -c "^gpg: Good signature from ")
   if [[ "${gpg_good_signature_count}" -ge "${gpg_good_signatures_required}" ]]; then
     echo "${gpg_good_signature_count} good."
     mv "${bitcoin_tarball_temporary_file}" "${bitcoin_tarball_destination_file}"
-    mv "${guix_sigs_temporary_dir}" "${guix_sigs_destination_dir}"
+    [ -d "${guix_sigs_destination_dir}"/ ] || mv "${guix_sigs_temporary_dir}" "${guix_sigs_destination_dir}"
     rm "${bitcoin_hash_file}"
     rm "${gpg_signatures_file}"
     rm -r "${tmp_dir:?}"/
