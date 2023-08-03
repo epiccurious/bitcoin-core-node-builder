@@ -69,6 +69,7 @@ sudo apt-get -qq update && sudo apt-get -qq install --assume-yes --no-install-re
 
 echo -n "Checking for Bitcoin Core... "
 if [ -f "${bitcoin_tarball_destination_file}" ]; then
+  rm -r "${tmp_dir:?}"/
   echo "ok."
 else
   echo
