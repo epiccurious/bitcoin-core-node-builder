@@ -82,7 +82,6 @@ if [[ "${gpg_good_signature_count}" -ge "${gpg_good_signatures_required}" ]]; th
   echo "${gpg_good_signature_count} good."
   rm "${bitcoin_hash_file}"
   rm "${gpg_signatures_file}"
-  rm -rf "${guix_sigs_clone_directory}"/
 else
   err "INVALID. The download has failed. This script cannot continue due to security concerns."
   echo -en "\nPRESS ANY KEY to exit... "
