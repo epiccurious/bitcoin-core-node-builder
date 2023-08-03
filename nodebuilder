@@ -64,7 +64,7 @@ if [ -f /var/run/reboot-required ]; then
 fi
 
 # Install dependencies
-echo "Checking dependencies... "
+echo "Checking for dependencies... "
 sudo apt-get -qq update && sudo apt-get -qq install --assume-yes --no-install-recommends curl git gnupg jq libxcb-xinerama0
 
 echo -n "Checking for Bitcoin Core... "
