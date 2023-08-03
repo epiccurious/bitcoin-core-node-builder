@@ -71,6 +71,7 @@ Inspiration for this project came from the following Open Source projects:
 - [Parmanode](https://github.com/armantheparman/parmanode) by [ArmanTheParman](https://github.com/armantheparman)
 
 And from the following configuration guides:
+- [Running A Full Node](https://bitcoin.org/en/full-node) by [Bitcoin.org contributors](https://bitcoin.org)
 - [Bitcoin & Lightning Server](https://www.youtube.com/watch?v=_Hrnls92TxQ) by [402 Payment Required](https://www.youtube.com/@402PaymentRequired)
 - [Running Bitcoin & Lightning Nodes](https://stopanddecrypt.medium.com/running-bitcoin-lightning-nodes-over-the-tor-network-2021-edition-489180297d5) by [StopAndDecrypt](https://stopanddecrypt.medium.com/)
 
