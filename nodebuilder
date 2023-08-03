@@ -216,11 +216,17 @@ while [[ "${ibd_status}" == "true" ]]; do
   size_on_disk=$(echo "${blockchain_info}" | jq '.size_on_disk')
 
   # Generate output string, clear the terminal, and print the output
-  sync_status="Sync progress:          $(printf '%.4f' ${sync_progress_percent}) %\nBlocks left to sync:    $((headers - blocks))\nCurrent chain tip:      $(date -d @"${last_block_time}" | cut -c 5-)\n\nEstimated size on disk: $((size_on_disk / 1024 / 1024 / 1024)) GiB\nEstimated free space:   $(df -h / | tail -1 | awk '{print $4}')iB"
+  sync_status="Sync progress:          $(printf '%.4f' "${sync_progress_percent}") %\n"
+  sync_status="${sync_status}Blocks left to sync:    $((headers - blocks))\n"
+  sync_status="${sync_status}Current chain tip:      $(date -d @"${last_block_time}" | cut -c 5-)\n\n"
+  sync_status="${sync_status}Estimated size on disk: $((size_on_disk / 1024 / 1024 / 1024)) GiB\n"
+  sync_status="${sync_status}Estimated free space:   $(df -h / | tail -1 | awk '{print $4}')iB\n"
   clear
   echo -e "${sync_status}"
 
-  echo -en "\nSynchronizing can take weeks on a slow connection.\n\nClose this Terminal window by clicking on the \"X\".\nThis screen will refresh in ${sleep_time} seconds."
+  echo -e "Synchronizing can take weeks on a slow connection.\n"
+  echo -e "Close this Terminal window by clicking on the \"X\"."
+  echo -n "This screen will refresh in ${sleep_time} seconds."
   for ((i = 1; i <= sleep_time; i++)); do
     sleep 1
     printf "."
