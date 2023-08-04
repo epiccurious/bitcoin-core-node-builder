@@ -235,9 +235,9 @@ while [[ "${ibd_status}" == "true" ]]; do
   size_on_disk=$(echo "${blockchain_info}" | jq '.size_on_disk')
 
   if [ "${headers}" -eq 0 ]; then
-    sync_status="Currently pre-syncing headers."
+    sync_status="Currently pre-syncing the block headers."
   elif [ "${blocks}" -eq 0 ]; then
-    sync_status="Currently syncing headers."
+    sync_status="Currently syncing the block headers."
   else
     sync_status="Sync progress:          $(printf '%.4f' "${sync_progress_percent}") %\n"
     sync_status="${sync_status}Blocks left to sync:    $((headers - blocks))\n"
