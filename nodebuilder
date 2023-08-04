@@ -246,7 +246,12 @@ while [[ "${ibd_status}" == "true" ]]; do
     sync_status="Sync progress:          $(printf '%.4f' "${sync_progress_percent}") %\n"
     sync_status="${sync_status}Blocks left to sync:    $((headers - blocks))\n"
     sync_status="${sync_status}Current chain tip:      $(date -d @"${last_block_time}" | cut -c 5-)\n\n"
-    sync_status="${sync_status}Estimated size on disk: $((size_on_disk / 1024 / 1024 / 1024)) GiB\n"
+    sync_status="${sync_status}Estimated size on disk: "
+    if [ "${size_on_disk}" -gt $((1024*1024*1024))]; then
+      sync_status="$((size_on_disk / 1024 / 1024 / 1024)) GiB\n"
+    else
+      sync_status="$((size_on_disk / 1024 / 1024)) MiB\n"
+    fi
     sync_status="${sync_status}Estimated free space:   $(df -h / | tail -1 | awk '{print $4}')iB"
   fi
   clear
