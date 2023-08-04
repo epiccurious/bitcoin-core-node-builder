@@ -47,11 +47,11 @@ The script performs the following actions:
 
 Before launching Bitcoin Core, this script modifies the following files:
 - Any files related to installing system updates and dependencies
-- The downloaded Bitcoin Core tarball and validation files in a random `/tmp/` directory:
-  - `bitcoin-*-x86_64-linux-gnu.tar.gz`
-  - `SHA256SUMS`
-  - `SHA256SUMS.asc`
-  - `guix.sigs/`
+- The downloaded Bitcoin Core tarball and validation files:
+  - `/tmp/*/bitcoin-*-x86_64-linux-gnu.tar.gz`
+  - `/tmp/*/SHA256SUMS`
+  - `/tmp/*/SHA256SUMS.asc`
+  - `/tmp/*/guix.sigs/`
 - The validated Bitcoin Core tarball and PGP keys:
   - `~/Downloads/bitcoin-*-x86_64-linux-gnu.tar.gz`
   - `~/Downloads/guix.sigs/`
