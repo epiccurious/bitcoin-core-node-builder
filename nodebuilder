@@ -3,7 +3,7 @@
 # A minimally-interactive script for launching a Bitcoin Core node
 set -e
 
-bitcoin_version="25.0"
+bitcoin_version="26.0"
 bitcoin_source="https://bitcoincore.org/bin/bitcoin-core-${bitcoin_version}"
 bitcoin_tarball_filename="bitcoin-${bitcoin_version}-x86_64-linux-gnu.tar.gz"
 bitcoin_hash_filename="SHA256SUMS"
