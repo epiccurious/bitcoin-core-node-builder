@@ -236,8 +236,7 @@ while [[ "${ibd_status}" == "true" ]]; do
   blocks=$(echo "${blockchain_info}" | jq '.blocks')
   headers=$(echo "${blockchain_info}" | jq '.headers')
   last_block_time=$(echo "${blockchain_info}" | jq '.time')
-  size_on_disk=$(echo "${blockchain_info}" | jq '.size_on_disk')
-
+  size_on_disk_in_mib=$(($(echo "${blockchain_info}" | jq '.size_on_disk') / 1024 / 1024))
   if [ "${headers}" -eq 0 ]; then
     sync_status="Downloading the block headers (first pass)."
   elif [ "${blocks}" -eq 0 ]; then
@@ -247,10 +246,10 @@ while [[ "${ibd_status}" == "true" ]]; do
     sync_status="${sync_status}Blocks left to sync:    $((headers - blocks))\n"
     sync_status="${sync_status}Current chain tip:      $(date -d @"${last_block_time}" | cut -c 5-)\n\n"
     sync_status="${sync_status}Estimated size on disk: "
-    if [ "${size_on_disk}" -gt $((1024 * 1024 * 1024)) ]; then
-      sync_status="${sync_status}$((size_on_disk / 1024 / 1024 / 1024)) GiB\n"
+    if [ "${size_on_disk_in_mib}" -gt 1024 ]; then
+      sync_status="${sync_status}$((size_on_disk_in_mib / 1024)) GiB\n"
     else
-      sync_status="${sync_status}$((size_on_disk / 1024 / 1024)) MiB\n"
+      sync_status="${sync_status}${size_on_disk_in_mib} MiB\n"
     fi
     sync_status="${sync_status}Estimated free space:   $(df -h / | tail -1 | awk '{print $4}')iB"
   fi
