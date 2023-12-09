@@ -115,6 +115,10 @@ echo -n "Extracting Bitcoin Core... "
 tar -xzf "${bitcoin_tarball_file}" -C "${bitcoin_core_extract_dir}"/ --strip-components=1
 echo "ok."
 
+echo -n "Running unit tests... "
+"${bitcoin_core_binary_dir}"/test_bitcoin --log_level=nothing 2> /dev/null
+echo "ok."
+
 echo -n "Creating Desktop and Applications shortcuts... "
 ## Create shortcut on the Desktop and in the "Show Applications" view
 desktop_path="${HOME}/Desktop"
