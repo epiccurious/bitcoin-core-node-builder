@@ -116,7 +116,13 @@ tar -xzf "${bitcoin_tarball_file}" -C "${bitcoin_core_extract_dir}"/ --strip-com
 echo "ok."
 
 echo -n "Running unit tests... "
-"${bitcoin_core_binary_dir}"/test_bitcoin --log_level=nothing 2> /dev/null
+unit_test_response="$("${bitcoin_core_binary_dir}"/test_bitcoin --log_level=nothing 2>&1)"
+if [[ "${unit_test_response}" != *"No errors detected"* ]]; then
+  echo -e "\n${unit_test_response}"
+  err "ERROR: Unit tests failed!"
+  echo "Exiting."
+  exit 1
+fi
 echo "ok."
 
 echo -n "Creating Desktop and Applications shortcuts... "
@@ -270,5 +276,5 @@ while [[ "${ibd_status}" == "true" ]]; do
   ibd_status=$(echo "${blockchain_info}" | jq '.initialblockdownload')
 done
 
-echo "This script has completed successfully. Exiting."
+echo "This script has completed successfully."
 exit 0
