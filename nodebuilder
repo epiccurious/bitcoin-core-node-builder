@@ -185,6 +185,7 @@ if [ $(grep --count --case-insensitive "^prune=" "${bitcoin_core_config_file}") 
 
   if [ "${free_space_in_mib}" -ge $((archival_node_required_disk_in_mib - data_already_synced_in_mib)) ]; then
     echo "  Your node will run as an unpruned full node."
+    echo "prune=0" >> "${bitcoin_core_config_file}"
   elif [ "${free_space_in_mib}" -lt $((archival_node_required_disk_in_mib / 80 - data_already_synced_in_mib)) ]; then
     err "You are too low on disk space to run Bitcoin Core."
     echo "Exiting."
