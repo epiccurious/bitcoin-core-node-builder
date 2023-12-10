@@ -157,7 +157,7 @@ echo -n "Setting the default node behavior... "
 [ -f "${bitcoin_core_config_file}" ] || echo -e "server=1\nmempoolfullrbf=1" > "${bitcoin_core_config_file}"
 echo "ok."
 
-if [ "$(grep --count --case-insensitive "^prune=" "${bitcoin_core_config_file}")" -eq 0 ]; then
+if [ "$(grep --count --ignore-case "^prune=" "${bitcoin_core_config_file}")" -eq 0 ]; then
   echo -n "Checking free space in home directory... "
   free_space_in_mib=$(df --output=avail --block-size="1MiB" "${HOME}" | sed 1d)
   echo "$((free_space_in_mib / 1024)) GiB."
