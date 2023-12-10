@@ -154,7 +154,12 @@ echo "ok."
 
 echo -n "Setting the default node behavior... "
 [ -d "${bitcoin_core_data_dir}"/ ] || mkdir "${bitcoin_core_data_dir}"/
-[ -f "${bitcoin_core_config_file}" ] || echo -e "server=1\nmempoolfullrbf=1" > "${bitcoin_core_config_file}"
+if [ ! -f "${bitcoin_core_config_file}" ]; then
+  {
+    echo "server=1"
+    echo "mempoolfullrbf=1"
+  } > "${bitcoin_core_config_file}"
+fi
 echo "ok."
 
 echo -n "Checking free space in home directory... "
