@@ -42,8 +42,8 @@ err() {
 
 # Check for active internet
 timeout --preserve-status 0.1 nc -z 1.1.1.1 53 || \
-timeout --preserve-status 0.1 nc -z 8.8.8.8 53 || \
-timeout --preserve-status 0.5 nc -z bitcoincore.org 443 || {
+  timeout --preserve-status 0.1 nc -z 8.8.8.8 53 || \
+  timeout --preserve-status 0.5 nc -z bitcoincore.org 443 || {
   err "ERROR: Check for active internet failed."
   echo "Exiting."
   exit 1
