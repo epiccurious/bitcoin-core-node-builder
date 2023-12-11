@@ -1,7 +1,9 @@
 #!/bin/bash
 #
 # A minimally-interactive script for launching a Bitcoin Core node
-set -e
+set -o errexit
+set -o nounset
+set -o pipefail
 
 bitcoin_version="26.0"
 bitcoin_source="https://bitcoincore.org/bin/bitcoin-core-${bitcoin_version}"
