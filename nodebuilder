@@ -40,6 +40,15 @@ err() {
   echo "[$(date +'%Y-%m-%dT%H:%M:%S%z')]: $*" >&2
 }
 
+# Check for active internet
+timeout --preserve-status 0.1 nc -z 1.1.1.1 53 ||
+  timeout --preserve-status 0.1 nc -z 8.8.8.8 53 ||
+  timeout --preserve-status 0.5 nc -z bitcoincore.org 443 || {
+  err "ERROR: Check for active internet failed."
+  echo "Exiting."
+  exit 1
+}
+
 # Set services to automatically restart during dist-upgrade
 if [ -f /etc/needrestart/needrestart.conf ]; then
   sudo sed -i 's/#$nrconf{restart} = '"'"'i'"'"';/$nrconf{restart} = '"'"'a'"'"';/g' /etc/needrestart/needrestart.conf
