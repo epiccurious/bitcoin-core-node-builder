@@ -145,13 +145,13 @@ cat << EOF | tee "${applications_path}"/"${shortcut_filename}" > "${desktop_path
 [Desktop Entry]
 Name=Bitcoin Core
 Comment=Launch Bitcoin Core
-Exec=${HOME}/bitcoin/bin/bitcoin-qt & disown
+Exec=${HOME}/bitcoin/bin/bitcoin-qt %u
 Icon=${HOME}/bitcoin/bitcoin.png
 Terminal=false
 StartupWMClass=Bitcoin Core
 Type=Application
 Categories=Application;
-MimeType=application/bitcoin-paymentrequest;application/bitcoin-payment;application/bitcoin-paymentack;
+MimeType=application/bitcoin-paymentrequest;application/bitcoin-payment;application/bitcoin-paymentack;x-scheme-handler/bitcoin;
 EOF
 ## Make the shortcuts user-executable
 chmod u+x "${applications_path}"/"${shortcut_filename}"
