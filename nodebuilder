@@ -132,25 +132,26 @@ if [[ "${unit_test_response}" != *"No errors detected"* ]]; then
 fi
 echo "ok."
 
-echo -n "Creating Desktop and Applications shortcuts... "
+echo -n "Creating application shortcuts... "
 ## Create shortcut on the Desktop and in the "Show Applications" view
 desktop_path="${HOME}/Desktop"
 applications_path="${HOME}/.local/share/applications"
 shortcut_filename="bitcoin_core.desktop"
 
-curl --silent --show-error --location --fail --output "${bitcoin_core_extract_dir}"/bitcoin.png https://raw.githubusercontent.com/epiccurious/bitcoin-core-node-builder/master/img/bitcoin.png
+curl --silent --show-error --location --fail --output "${bitcoin_core_extract_dir}"/bitcoin.png https://github.com/epiccurious/bitcoin-core-node-builder/raw/master/img/bitcoin.png
 
 ## Create .desktop on the user's Desktop and "Show Applications" directories
 cat << EOF | tee "${applications_path}"/"${shortcut_filename}" > "${desktop_path}"/"${shortcut_filename}"
 [Desktop Entry]
 Name=Bitcoin Core
 Comment=Launch Bitcoin Core
-Exec=${HOME}/bitcoin/bin/bitcoin-qt & disown
+Exec=${HOME}/bitcoin/bin/bitcoin-qt %u
 Icon=${HOME}/bitcoin/bitcoin.png
 Terminal=false
 StartupWMClass=Bitcoin Core
 Type=Application
 Categories=Application;
+MimeType=application/bitcoin-paymentrequest;application/bitcoin-payment;application/bitcoin-paymentack;x-scheme-handler/bitcoin;
 EOF
 ## Make the shortcuts user-executable
 chmod u+x "${applications_path}"/"${shortcut_filename}"
