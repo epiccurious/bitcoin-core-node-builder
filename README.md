@@ -26,7 +26,7 @@ This script **does not** support macOS, 32-bit operating systems, or Arm-based h
 
 Open the Terminal and run the following command:
 ```
-/bin/bash -c "$(curl -sSL https://raw.githubusercontent.com/epiccurious/bitcoin-core-node-builder/master/nodebuilder)"
+/bin/bash -c "$(curl -sSL https://github.com/epiccurious/bitcoin-core-node-builder/raw/master/nodebuilder)"
 ```
 
 NOTE: This code is still under development and not yet ready. Test at your own risk. You can track progress under [the Minimum Viable Product milestone](https://github.com/epiccurious/bitcoin-core-node-builder/milestone/1).
