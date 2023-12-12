@@ -5,9 +5,9 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
-bitcoin_version="26.0"
-bitcoin_source="https://bitcoincore.org/bin/bitcoin-core-${bitcoin_version}"
-bitcoin_tarball_filename="bitcoin-${bitcoin_version}-x86_64-linux-gnu.tar.gz"
+target_bitcoin_version="26.0"
+bitcoin_source="https://bitcoincore.org/bin/bitcoin-core-${target_bitcoin_version}"
+bitcoin_tarball_filename="bitcoin-${target_bitcoin_version}-x86_64-linux-gnu.tar.gz"
 bitcoin_hash_filename="SHA256SUMS"
 gpg_signatures_filename="SHA256SUMS.asc"
 gpg_good_signatures_required="7"
@@ -78,60 +78,70 @@ fi
 echo "Checking for dependencies... "
 sudo apt-get -qq update && sudo apt-get -qq install --assume-yes --no-install-recommends curl git gnupg jq libxcb-xinerama0
 
-echo -n "Checking for Bitcoin Core... "
-if [ -f "${bitcoin_tarball_destination_file}" ]; then
-  rm -r "${tmp_dir:?}"/
-  echo "ok."
+echo -n "Checking for Bitcoin Core ${target_bitcoin_version}... "
+if [ -f "${bitcoin_core_binary_dir}"/bitcoin-qt ]; then
+  current_bitcoin_version="$("${bitcoin_core_binary_dir}"/bitcoin-qt --version 2> /dev/null | head -1)"
 else
-  echo
-  echo -n "  Downloading Bitcoin Core... "
-  curl --silent --show-error --location --fail --output "${bitcoin_tarball_temporary_file}" "${bitcoin_tarball_file_source}"
-  curl --silent --show-error --location --fail --output "${bitcoin_hash_file}" "${bitcoin_hash_file_source}"
-  curl --silent --show-error --location --fail --output "${gpg_signatures_file}" "${gpg_signatures_file_source}"
-  echo "ok"
-
-  # Check that the release file's checksum is listed in SHA256SUMS
-  echo -n "  Validating the checksum... "
-  cd "${tmp_dir}"/
-  sha256_check=$(grep ${bitcoin_tarball_filename} ${bitcoin_hash_filename} | sha256sum --check 2> /dev/null)
-  cd "${HOME}"/
-  if [[ "${sha256_check}" == *"OK" ]]; then
-    echo "ok."
-  else
-    err "INVALID. The download has failed. This script cannot continue due to security concerns."
-    err "Please review the temporary file ${tmp_dir}/${bitcoin_hash_file}."
-    echo -en "\nPRESS ANY KEY to exit... "
-    read -rsn1 && echo
-    echo "Exiting."
-    exit 1
-  fi
-
-  # Check the PGP signatures of SHA256SUMS
-  echo -n "  Validating the signatures... "
-  [ -d "${guix_sigs_destination_dir}"/ ] || git clone --quiet "${guix_sigs_repo}" "${guix_sigs_temporary_dir}"
-  gpg --quiet --import "${guix_sigs_temporary_dir}"/builder-keys/*.gpg
-  gpg_good_signature_count=$(gpg --verify "${gpg_signatures_file}" 2>&1 | grep -c "^gpg: Good signature from ")
-  if [[ "${gpg_good_signature_count}" -ge "${gpg_good_signatures_required}" ]]; then
-    echo "${gpg_good_signature_count} good."
-    mv "${bitcoin_tarball_temporary_file}" "${bitcoin_tarball_destination_file}"
-    [ -d "${guix_sigs_destination_dir}"/ ] || mv "${guix_sigs_temporary_dir}" "${guix_sigs_destination_dir}"
-    rm "${bitcoin_hash_file}"
-    rm "${gpg_signatures_file}"
-    rm -r "${tmp_dir:?}"/
-  else
-    err "INVALID. The download has failed. This script cannot continue due to security concerns."
-    err "Please review the temporary file ${tmp_dir}/${gpg_signatures_file}."
-    echo -en "\nPRESS ANY KEY to exit... "
-    read -rsn1 && echo
-    echo "Exiting."
-    exit 1
-  fi
+  current_bitcoin_version=""
 fi
 
-echo -n "Extracting Bitcoin Core... "
-[ -d "${bitcoin_core_extract_dir}" ] || mkdir "${bitcoin_core_extract_dir}"/
-tar -xzf "${bitcoin_tarball_destination_file}" -C "${bitcoin_core_extract_dir}"/ --strip-components=1
-echo "ok."
+if [[ "${current_bitcoin_version}" == *"${target_bitcoin_version}"* ]]; then
+  echo "ok."
+else
+  if [ -f "${bitcoin_tarball_destination_file}" ]; then
+    rm -r "${tmp_dir:?}"/
+    echo "ok."
+  else
+    echo
+    echo -n "  Downloading Bitcoin Core... "
+    curl --silent --show-error --location --fail --output "${bitcoin_tarball_temporary_file}" "${bitcoin_tarball_file_source}"
+    curl --silent --show-error --location --fail --output "${bitcoin_hash_file}" "${bitcoin_hash_file_source}"
+    curl --silent --show-error --location --fail --output "${gpg_signatures_file}" "${gpg_signatures_file_source}"
+    echo "ok"
+
+    # Check that the release file's checksum is listed in SHA256SUMS
+    echo -n "  Validating the checksum... "
+    cd "${tmp_dir}"/
+    sha256_check=$(grep ${bitcoin_tarball_filename} ${bitcoin_hash_filename} | sha256sum --check 2> /dev/null)
+    cd "${HOME}"/
+    if [[ "${sha256_check}" == *"OK" ]]; then
+      echo "ok."
+    else
+      err "INVALID. The download has failed. This script cannot continue due to security concerns."
+      err "Please review the temporary file ${tmp_dir}/${bitcoin_hash_file}."
+      echo -en "\nPRESS ANY KEY to exit... "
+      read -rsn1 && echo
+      echo "Exiting."
+      exit 1
+    fi
+
+    # Check the PGP signatures of SHA256SUMS
+    echo -n "  Validating the signatures... "
+    [ -d "${guix_sigs_destination_dir}"/ ] || git clone --quiet "${guix_sigs_repo}" "${guix_sigs_temporary_dir}"
+    gpg --quiet --import "${guix_sigs_temporary_dir}"/builder-keys/*.gpg
+    gpg_good_signature_count=$(gpg --verify "${gpg_signatures_file}" 2>&1 | grep -c "^gpg: Good signature from ")
+    if [[ "${gpg_good_signature_count}" -ge "${gpg_good_signatures_required}" ]]; then
+      echo "${gpg_good_signature_count} good."
+      mv "${bitcoin_tarball_temporary_file}" "${bitcoin_tarball_destination_file}"
+      [ -d "${guix_sigs_destination_dir}"/ ] || mv "${guix_sigs_temporary_dir}" "${guix_sigs_destination_dir}"
+      rm "${bitcoin_hash_file}"
+      rm "${gpg_signatures_file}"
+      rm -r "${tmp_dir:?}"/
+    else
+      err "INVALID. The download has failed. This script cannot continue due to security concerns."
+      err "Please review the temporary file ${tmp_dir}/${gpg_signatures_file}."
+      echo -en "\nPRESS ANY KEY to exit... "
+      read -rsn1 && echo
+      echo "Exiting."
+      exit 1
+    fi
+  fi
+
+  echo -n "Extracting Bitcoin Core... "
+  [ -d "${bitcoin_core_extract_dir}" ] || mkdir "${bitcoin_core_extract_dir}"/
+  tar -xzf "${bitcoin_tarball_destination_file}" -C "${bitcoin_core_extract_dir}"/ --strip-components=1
+  echo "ok."
+fi
 
 echo -n "Running unit tests... "
 unit_test_response="$("${bitcoin_core_binary_dir}"/test_bitcoin --log_level=nothing 2>&1)"
