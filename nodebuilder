@@ -88,11 +88,10 @@ fi
 if [[ "${current_bitcoin_version}" == *"${target_bitcoin_version}"* ]]; then
   echo "ok."
 else
+  echo
   if [ -f "${bitcoin_tarball_destination_file}" ]; then
     rm -r "${tmp_dir:?}"/
-    echo "ok."
   else
-    echo
     echo -n "  Downloading Bitcoin Core... "
     curl --silent --show-error --location --fail --output "${bitcoin_tarball_temporary_file}" "${bitcoin_tarball_file_source}"
     curl --silent --show-error --location --fail --output "${bitcoin_hash_file}" "${bitcoin_hash_file_source}"
