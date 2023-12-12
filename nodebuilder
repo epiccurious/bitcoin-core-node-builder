@@ -18,7 +18,23 @@ gpg_signatures_file_source="${bitcoin_source}/${gpg_signatures_filename}"
 guix_sigs_repo="https://github.com/bitcoin-core/guix.sigs.git"
 
 tmp_dir="$(mktemp -d)"
-trap 'rm -rf -- "$tmp_dir"' EXIT
+trap cleanup EXIT
+trap handle_sigint SIGINT
+trap '' INT
+
+cleanup() {
+  echo "cleaning up"
+  rm -rf -- "${tmp_dir}"
+}
+
+handle_sigint() {
+  sleep 10
+  echo -e "\n\nALERT: Script interrupted with SIGINT (Ctrl+C)."
+  cleanup
+  #echo $(ps h -t $tty -o tpgid | uniq)
+  #kill -INT -$(ps h -t $tty -o tpgid | uniq)
+}
+
 bitcoin_tarball_temporary_file="${tmp_dir}/${bitcoin_tarball_filename}"
 bitcoin_tarball_destination_file="${HOME}/Downloads/${bitcoin_tarball_filename}"
 bitcoin_hash_file="${tmp_dir}/${bitcoin_hash_filename}"
@@ -251,7 +267,7 @@ if [ "$(grep --count --ignore-case "^prune=" "${bitcoin_core_config_file}")" == 
 fi
 
 echo -n "Starting Bitcoin Core... "
-"${bitcoin_core_binary_dir}"/bitcoin-qt 2> /dev/null &
+exec "${bitcoin_core_binary_dir}"/bitcoin-qt 2> /dev/null &
 disown
 "${bitcoin_core_binary_dir}"/bitcoin-cli --rpcwait getrpcinfo > /dev/null
 echo "ok."
