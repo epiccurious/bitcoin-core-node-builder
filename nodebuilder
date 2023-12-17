@@ -78,7 +78,7 @@ fi
 echo "Checking for dependencies... "
 sudo apt-get -qq update && sudo apt-get -qq install --assume-yes --no-install-recommends curl git gnupg jq libxcb-xinerama0
 
-echo -n "Checking for Bitcoin Core ${target_bitcoin_version}... "
+echo -n "Checking for Bitcoin ${target_bitcoin_version}... "
 if [ -f "${bitcoin_core_binary_dir}"/bitcoin-qt ]; then
   current_bitcoin_version="$("${bitcoin_core_binary_dir}"/bitcoin-qt --version 2> /dev/null | head -1)"
 else
@@ -284,24 +284,34 @@ while [[ "${ibd_status}" == "true" ]]; do
   headers=$(echo "${blockchain_info}" | jq '.headers')
   last_block_time=$(echo "${blockchain_info}" | jq '.time')
   size_on_disk_in_mib=$(($(echo "${blockchain_info}" | jq '.size_on_disk') / 1024 / 1024))
+  free_space_in_mib=$(df --output=avail --block-size="1MiB" "${bitcoin_core_data_dir}" | sed 1d)
+
+  sync_status=""
   if [ "${headers}" -eq 0 ]; then
-    sync_status="Downloading the block headers (first pass)."
+    sync_status="${sync_status}Pre-syncing the block headers (first pass).\n"
   elif [ "${blocks}" -eq 0 ]; then
-    sync_status="Downloading the block headers (second pass)."
+    sync_status="${sync_status}Syncing the block headers (second pass).\n"
   else
-    sync_status="Sync progress:          $(printf '%.4f' "${sync_progress_percent}") %\n"
-    sync_status="${sync_status}Blocks left to sync:    $((headers - blocks))\n"
-    sync_status="${sync_status}Current chain tip:      $(date -d @"${last_block_time}" | cut -c 5-)\n\n"
-    sync_status="${sync_status}Estimated size on disk: "
-    if [ "${size_on_disk_in_mib}" -gt 1024 ]; then
-      sync_status="${sync_status}$((size_on_disk_in_mib / 1024)) GiB\n"
-    else
-      sync_status="${sync_status}${size_on_disk_in_mib} MiB\n"
-    fi
-    sync_status="${sync_status}Estimated free space:   $(df -h / | tail -1 | awk '{print $4}')iB"
+    sync_status="${sync_status}Sync progress:      $(printf '%.3f' "${sync_progress_percent}") %\n"
+    sync_status="${sync_status}Blocks remaining:   $((headers - blocks))\n"
+    sync_status="${sync_status}Current chain tip:  $(date -d @"${last_block_time}" | cut -c 5-)\n\n"
+  fi
+
+  sync_status="${sync_status}\nChain sync size:    "
+  if [ "${size_on_disk_in_mib}" -gt 1024 ]; then
+    sync_status="${sync_status}$((size_on_disk_in_mib / 1024)) GiB\n"
+  else
+    sync_status="${sync_status}${size_on_disk_in_mib} MiB\n"
+  fi
+
+  sync_status="${sync_status}Disk free space:    "
+  if [ "${free_space_in_mib}" -gt 1024 ]; then
+    sync_status="${sync_status}$((free_space_in_mib / 1024)) GiB\n"
+  else
+    sync_status="${sync_status}${free_space_in_mib} MiB\n"
   fi
   clear
-  echo -e "${sync_status}\n"
+  echo -en "${sync_status}\n"
 
   echo -e "Synchronizing can take weeks on a slow connection.\n"
   echo -e "Close this Terminal window by clicking on the \"X\"."
