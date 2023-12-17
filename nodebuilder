@@ -146,8 +146,8 @@ if [[ "${unit_test_response}" != *"No errors detected"* ]]; then
 fi
 echo "ok."
 
-[ "${CI+''}" = true ] && echo "CONFIRMED RUNNING ON CI"
-[ "${CI+''}" = true ] || echo "CONFIRMED NOT RUNNING ON CI"
+[ "${CI=false}" = true ] && echo "CONFIRMED RUNNING ON CI"
+[ "${CI=false}" = true ] || echo "CONFIRMED NOT RUNNING ON CI"
 
 echo -n "Creating application shortcuts... "
 ## Create shortcut on the Desktop and in the "Show Applications" view
