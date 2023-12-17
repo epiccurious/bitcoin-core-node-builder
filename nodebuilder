@@ -49,29 +49,11 @@ timeout --preserve-status 0.1 nc -z 1.1.1.1 53 ||
   exit 1
 }
 
-restart_conf_file="/etc/needrestart/needrestart.conf"
-# Set services to automatically restart during dist-upgrade
-
-if [ -f "${restart_conf_file}" ]; then
-  if [ "$(grep -c "^\$nrconf{restart} = 'i';" ${restart_conf_file})" -gt 0 ]; then
-    sudo sed -i 's/#$nrconf{restart} = '"'"'i'"'"';/$nrconf{restart} = '"'"'a'"'"';/g' "${restart_conf_file}"
-  fi
-else
-  sudo mkdir -p "$(dirname ${restart_conf_file})"/
-  echo "\$nrconf{restart} = 'a';" | sudo tee "${restart_conf_file}"
-fi
-
 # Perform a full system upgrade (comparable to running Ubuntu System Updater)
 clear
 echo -n "Performing a full system upgrade... "
 sudo apt-get -qq update && echo
-sudo apt-get -qq dist-upgrade --assume-yes
-
-# Set services restart flag back to interactive mode.
-if [ -f "${restart_conf_file}" ] &&
-  [ "$(grep -c "^\$nrconf{restart} = 'a';" ${restart_conf_file})" -gt 0 ]; then
-  sudo sed -i 's/#$nrconf{restart} = '"'"'a'"'"';/$nrconf{restart} = '"'"'i'"'"';/g' "${restart_conf_file}"
-fi
+sudo NEEDRESTART_MODE=a apt-get -qq dist-upgrade --assume-yes
 
 if [ -f /var/run/reboot-required ]; then
   echo -en "\nREBOOT REQUIRED to upgrade the following:\n$(cat /var/run/reboot-required.pkgs)\n\nPRESS ANY KEY to reboot or press Ctrl+C to exit... "
