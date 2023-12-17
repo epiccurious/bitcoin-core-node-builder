@@ -32,4 +32,4 @@ jobs:
           sh_checker_exclude: offloadcoredata usei2p usetor
 
       - name: Run nodebuilder
-        run: timeout 600 ./nodebuilder || [[ "$?" -eq "124" ]] && true
+        run: timeout 600 /bin/bash -x ./nodebuilder || [[ "$?" -eq "124" ]] && true
