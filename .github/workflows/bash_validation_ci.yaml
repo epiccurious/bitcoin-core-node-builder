@@ -9,7 +9,6 @@ on:
   workflow_dispatch:
 
 jobs:
-  using: "composite"
   steps:
     name: Validation with ShellCheck
     runs-on: ubuntu-latest
