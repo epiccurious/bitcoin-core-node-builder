@@ -48,7 +48,7 @@ timeout --preserve-status 0.1 nc -z 1.1.1.1 53 ||
   echo "Exiting."
   exit 1
 }
-echo "this is a test for development purposes"
+
 # Perform a full system upgrade (comparable to running Ubuntu System Updater)
 clear
 echo -n "Performing a full system upgrade... "
