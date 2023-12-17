@@ -8,9 +8,12 @@ on:
 
   workflow_dispatch:
 
+env:
+  TERM: xterm
+
 jobs:
   steps:
-    name: Validation with ShellCheck
+    name: Bash Validation
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
