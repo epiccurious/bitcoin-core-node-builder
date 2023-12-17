@@ -136,7 +136,7 @@ else
   echo "ok."
 fi
 
-echo -n "Running unit tests... "
+echo -n "Running the unit tests... "
 unit_test_response="$("${bitcoin_core_binary_dir}"/test_bitcoin --log_level=nothing 2>&1)"
 if [[ "${unit_test_response}" != *"No errors detected"* ]]; then
   echo -e "\n${unit_test_response}"
@@ -173,7 +173,7 @@ EOF
 chmod u+x "${applications_path}"/"${shortcut_filename}"
 chmod u+x "${desktop_path}"/"${shortcut_filename}"
 ## Make the desktop shortcut trusted
-[ "${CI}" = true ] || gio set "${desktop_path}"/"${shortcut_filename}" "metadata::trusted" true
+[ "${CI+''}" = true ] || gio set "${desktop_path}"/"${shortcut_filename}" "metadata::trusted" true
 echo "ok."
 
 echo -n "Setting the default node behavior... "
@@ -242,9 +242,18 @@ if [ "$(grep --count --ignore-case "^prune=" "${bitcoin_core_config_file}")" == 
   fi
 fi
 
+[ "${CI+''}" = true ] && echo "CONFIRMED RUNNING ON CI"
+
 echo -n "Starting Bitcoin Core... "
-"${bitcoin_core_binary_dir}"/bitcoin-qt 2> /dev/null &
-disown
+if [ "${CI+''}" = true ]; then
+  echo -en "\n  Starting bitcoind... "
+  "${bitcoin_core_binary_dir}"/bitcoind --daemonwait
+else
+  "${bitcoin_core_binary_dir}"/bitcoin-qt 2> /dev/null &
+  disown
+fi
+echo "ok."
+echo -n "  Checking the RPC status... "
 "${bitcoin_core_binary_dir}"/bitcoin-cli --rpcwait getrpcinfo > /dev/null
 echo "ok."
 
