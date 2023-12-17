@@ -48,9 +48,9 @@ timeout --preserve-status 0.1 nc -z 1.1.1.1 53 ||
   echo "Exiting."
   exit 1
 }
-
+echo "this is a test for development purposes"
 # Perform a full system upgrade (comparable to running Ubuntu System Updater)
-[ "${CI}" = true ] || clear
+clear
 echo -n "Performing a full system upgrade... "
 sudo apt-get -qq update && echo
 sudo NEEDRESTART_MODE=a apt-get -qq dist-upgrade --assume-yes
@@ -307,7 +307,7 @@ while [[ "${ibd_status}" == "true" ]]; do
   else
     sync_status="${sync_status}${free_space_in_mib} MiB\n"
   fi
-  [ "${CI}" = true ] || clear
+  clear
   echo -en "${sync_status}\n"
 
   echo -e "Synchronizing can take weeks on a slow connection.\n"
