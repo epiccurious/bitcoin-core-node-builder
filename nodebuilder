@@ -308,7 +308,6 @@ while [[ "${ibd_status}" == "true" ]]; do
     else
       sync_status="${sync_status}${free_space_in_mib} MiB\n"
     fi
-    sync_status="${sync_status}Estimated free space:   $(df -h / | tail -1 | awk '{print $4}')iB"
   fi
   clear
   echo -e "${sync_status}\n"
