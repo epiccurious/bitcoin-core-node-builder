@@ -114,6 +114,7 @@ else
     gpg_good_signature_count=$(gpg --verify "${gpg_signatures_file}" 2>&1 | grep -c "^gpg: Good signature from ")
     if [[ "${gpg_good_signature_count}" -ge "${gpg_good_signatures_required}" ]]; then
       echo "${gpg_good_signature_count} good."
+      [ -d "$(dirname "${bitcoin_tarball_destination_file}")" ] || mkdir -p "$(dirname "${bitcoin_tarball_destination_file}")"
       mv "${bitcoin_tarball_temporary_file}" "${bitcoin_tarball_destination_file}"
       [ -d "${guix_sigs_destination_dir}"/ ] || mv "${guix_sigs_temporary_dir}" "${guix_sigs_destination_dir}"
       rm "${bitcoin_hash_file}"
@@ -135,7 +136,7 @@ else
   echo "ok."
 fi
 
-echo -n "Running unit tests... "
+echo -n "Running the unit tests... "
 unit_test_response="$("${bitcoin_core_binary_dir}"/test_bitcoin --log_level=nothing 2>&1)"
 if [[ "${unit_test_response}" != *"No errors detected"* ]]; then
   echo -e "\n${unit_test_response}"
@@ -154,6 +155,8 @@ shortcut_filename="bitcoin_core.desktop"
 curl --silent --show-error --location --fail --output "${bitcoin_core_extract_dir}"/bitcoin.png https://github.com/epiccurious/bitcoin-core-node-builder/raw/master/img/bitcoin.png
 
 ## Create .desktop on the user's Desktop and "Show Applications" directories
+[ -d "${desktop_path}" ] || mkdir -p "${desktop_path}"
+[ -d "${applications_path}" ] || mkdir -p "${applications_path}"
 cat << EOF | tee "${applications_path}"/"${shortcut_filename}" > "${desktop_path}"/"${shortcut_filename}"
 [Desktop Entry]
 Name=Bitcoin Core
@@ -170,7 +173,7 @@ EOF
 chmod u+x "${applications_path}"/"${shortcut_filename}"
 chmod u+x "${desktop_path}"/"${shortcut_filename}"
 ## Make the desktop shortcut trusted
-gio set "${desktop_path}"/"${shortcut_filename}" "metadata::trusted" true
+[ "${CI:-false}" = true ] || gio set "${desktop_path}"/"${shortcut_filename}" "metadata::trusted" true
 echo "ok."
 
 echo -n "Setting the default node behavior... "
@@ -240,8 +243,15 @@ if [ "$(grep --count --ignore-case "^prune=" "${bitcoin_core_config_file}")" == 
 fi
 
 echo -n "Starting Bitcoin Core... "
-"${bitcoin_core_binary_dir}"/bitcoin-qt 2> /dev/null &
-disown
+if [ "${CI:-false}" = true ]; then
+  echo -en "\n  Starting bitcoind... "
+  "${bitcoin_core_binary_dir}"/bitcoind --daemonwait
+else
+  "${bitcoin_core_binary_dir}"/bitcoin-qt 2> /dev/null &
+  disown
+fi
+echo "ok."
+echo -n "  Checking the RPC status... "
 "${bitcoin_core_binary_dir}"/bitcoin-cli --rpcwait getrpcinfo > /dev/null
 echo "ok."
 
@@ -309,6 +319,11 @@ while [[ "${ibd_status}" == "true" ]]; do
     sleep 1
     printf "."
   done
+
+  if [ "${CI:-false}" = true ]; then
+    echo "Exiting the script for CI runners."
+    exit 0
+  fi
 
   # Check for updated sync state
   blockchain_info=$("${bitcoin_core_binary_dir}"/bitcoin-cli --rpcwait getblockchaininfo)
