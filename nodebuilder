@@ -69,7 +69,7 @@ sudo apt-get -qq dist-upgrade --assume-yes
 
 # Set services restart flag back to interactive mode.
 if [ -f "${restart_conf_file}" ] &&
-  [ $(grep -c "^\$nrconf{restart} = 'i';" ${restart_conf_file}) -gt 0 ]; then
+  [ $(grep -c "^\$nrconf{restart} = 'a';" ${restart_conf_file}) -gt 0 ]; then
   sudo sed -i 's/#$nrconf{restart} = '"'"'a'"'"';/$nrconf{restart} = '"'"'i'"'"';/g' "${restart_conf_file}"
 fi
 
