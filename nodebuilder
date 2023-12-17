@@ -50,7 +50,7 @@ timeout --preserve-status 0.1 nc -z 1.1.1.1 53 ||
 }
 
 # Perform a full system upgrade (comparable to running Ubuntu System Updater)
-clear
+[ "${CI}" = true ] || clear
 echo -n "Performing a full system upgrade... "
 sudo apt-get -qq update && echo
 sudo NEEDRESTART_MODE=a apt-get -qq dist-upgrade --assume-yes
@@ -114,6 +114,7 @@ else
     gpg_good_signature_count=$(gpg --verify "${gpg_signatures_file}" 2>&1 | grep -c "^gpg: Good signature from ")
     if [[ "${gpg_good_signature_count}" -ge "${gpg_good_signatures_required}" ]]; then
       echo "${gpg_good_signature_count} good."
+      [ -d "$(dirname "${bitcoin_tarball_destination_file}")" ] || mkdir -p "$(dirname "${bitcoin_tarball_destination_file}")"
       mv "${bitcoin_tarball_temporary_file}" "${bitcoin_tarball_destination_file}"
       [ -d "${guix_sigs_destination_dir}"/ ] || mv "${guix_sigs_temporary_dir}" "${guix_sigs_destination_dir}"
       rm "${bitcoin_hash_file}"
@@ -154,6 +155,8 @@ shortcut_filename="bitcoin_core.desktop"
 curl --silent --show-error --location --fail --output "${bitcoin_core_extract_dir}"/bitcoin.png https://github.com/epiccurious/bitcoin-core-node-builder/raw/master/img/bitcoin.png
 
 ## Create .desktop on the user's Desktop and "Show Applications" directories
+[ -d "${desktop_path}" ] || mkdir -p "${desktop_path}"
+[ -d "${applications_path}" ] || mkdir -p "${applications_path}"
 cat << EOF | tee "${applications_path}"/"${shortcut_filename}" > "${desktop_path}"/"${shortcut_filename}"
 [Desktop Entry]
 Name=Bitcoin Core
@@ -170,7 +173,7 @@ EOF
 chmod u+x "${applications_path}"/"${shortcut_filename}"
 chmod u+x "${desktop_path}"/"${shortcut_filename}"
 ## Make the desktop shortcut trusted
-gio set "${desktop_path}"/"${shortcut_filename}" "metadata::trusted" true
+[ "${CI}" = true ] || gio set "${desktop_path}"/"${shortcut_filename}" "metadata::trusted" true
 echo "ok."
 
 echo -n "Setting the default node behavior... "
@@ -299,7 +302,7 @@ while [[ "${ibd_status}" == "true" ]]; do
   else
     sync_status="${sync_status}${free_space_in_mib} MiB\n"
   fi
-  clear
+  [ "${CI}" = true ] || clear
   echo -en "${sync_status}\n"
 
   echo -e "Synchronizing can take weeks on a slow connection.\n"
