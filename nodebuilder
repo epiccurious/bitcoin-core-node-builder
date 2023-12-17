@@ -303,7 +303,7 @@ while [[ "${ibd_status}" == "true" ]]; do
     fi
 
     sync_status="${sync_status}Free space on disk:     "
-    if [ "${free_space_in_mib}" -gt 1024]; then
+    if [ "${free_space_in_mib}" -gt 1024 ]; then
       sync_status="${sync_status}$((free_space_in_mib / 1024)) GiB\n"
     else
       sync_status="${sync_status}${free_space_in_mib} MiB\n"
