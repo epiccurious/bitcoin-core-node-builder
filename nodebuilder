@@ -78,7 +78,7 @@ if [[ "${current_bitcoin_version}" == *"${target_bitcoin_version}"* ]]; then
   echo "ok."
 else
   echo
-  if [ -f ${bitcoin_tarball_destination_file} ]; then
+  if [ -f "${bitcoin_tarball_destination_file}" ]; then
     rm -r "${tmp_dir:?}"/
   else
     echo -n "  Downloading Bitcoin Core... "
