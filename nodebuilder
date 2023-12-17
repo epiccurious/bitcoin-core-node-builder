@@ -242,11 +242,6 @@ if [ "$(grep --count --ignore-case "^prune=" "${bitcoin_core_config_file}")" == 
   fi
 fi
 
-if [ "${CI}" = true ]; then
-  echo "Exiting the script for CI runners."
-  exit 0
-fi
-
 echo -n "Starting Bitcoin Core... "
 "${bitcoin_core_binary_dir}"/bitcoin-qt 2> /dev/null &
 disown
@@ -317,6 +312,11 @@ while [[ "${ibd_status}" == "true" ]]; do
     sleep 1
     printf "."
   done
+
+  if [ "${CI}" = true ]; then
+    echo "Exiting the script for CI runners."
+    exit 0
+  fi
 
   # Check for updated sync state
   blockchain_info=$("${bitcoin_core_binary_dir}"/bitcoin-cli --rpcwait getblockchaininfo)
