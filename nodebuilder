@@ -146,8 +146,8 @@ if [[ "${unit_test_response}" != *"No errors detected"* ]]; then
 fi
 echo "ok."
 
-[ "${CI=false}" = true ] && echo "CONFIRMED RUNNING ON CI"
-[ "${CI=false}" = true ] || echo "CONFIRMED NOT RUNNING ON CI"
+[ "${CI:-false}" = true ] && echo "CONFIRMED RUNNING ON CI"
+[ "${CI:-false}" = true ] || echo "CONFIRMED NOT RUNNING ON CI"
 
 echo -n "Creating application shortcuts... "
 ## Create shortcut on the Desktop and in the "Show Applications" view
@@ -176,7 +176,7 @@ EOF
 chmod u+x "${applications_path}"/"${shortcut_filename}"
 chmod u+x "${desktop_path}"/"${shortcut_filename}"
 ## Make the desktop shortcut trusted
-[ "${CI+''}" = true ] || gio set "${desktop_path}"/"${shortcut_filename}" "metadata::trusted" true
+[ "${CI:-false}" = true ] || gio set "${desktop_path}"/"${shortcut_filename}" "metadata::trusted" true
 echo "ok."
 
 echo -n "Setting the default node behavior... "
@@ -246,7 +246,7 @@ if [ "$(grep --count --ignore-case "^prune=" "${bitcoin_core_config_file}")" == 
 fi
 
 echo -n "Starting Bitcoin Core... "
-if [ "${CI+''}" = true ]; then
+if [ "${CI:-false}" = true ]; then
   echo -en "\n  Starting bitcoind... "
   "${bitcoin_core_binary_dir}"/bitcoind --daemonwait
 else
@@ -323,7 +323,7 @@ while [[ "${ibd_status}" == "true" ]]; do
     printf "."
   done
 
-  if [ "${CI}" = true ]; then
+  if [ "${CI:-false}" = true ]; then
     echo "Exiting the script for CI runners."
     exit 0
   fi
