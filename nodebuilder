@@ -49,22 +49,11 @@ timeout --preserve-status 0.1 nc -z 1.1.1.1 53 ||
   exit 1
 }
 
-# Set services to automatically restart during dist-upgrade
-if [ -f /etc/needrestart/needrestart.conf ]; then
-  sudo sed -i 's/#$nrconf{restart} = '"'"'i'"'"';/$nrconf{restart} = '"'"'a'"'"';/g' /etc/needrestart/needrestart.conf
-else
-  sudo mkdir -p /etc/needrestart/
-  echo "\$nrconf{restart} = 'a';" | sudo tee /etc/needrestart/needrestart.conf
-fi
-
 # Perform a full system upgrade (comparable to running Ubuntu System Updater)
 clear
 echo -n "Performing a full system upgrade... "
 sudo apt-get -qq update && echo
-sudo apt-get -qq dist-upgrade --assume-yes
-
-# Set services restart flag back to interactive mode.
-sudo sed -i 's/#$nrconf{restart} = '"'"'a'"'"';/$nrconf{restart} = '"'"'i'"'"';/g' /etc/needrestart/needrestart.conf
+sudo NEEDRESTART_MODE=a apt-get -qq dist-upgrade --assume-yes
 
 if [ -f /var/run/reboot-required ]; then
   echo -en "\nREBOOT REQUIRED to upgrade the following:\n$(cat /var/run/reboot-required.pkgs)\n\nPRESS ANY KEY to reboot or press Ctrl+C to exit... "
@@ -294,7 +283,7 @@ while [[ "${ibd_status}" == "true" ]]; do
   else
     sync_status="${sync_status}Sync progress:      $(printf '%.3f' "${sync_progress_percent}") %\n"
     sync_status="${sync_status}Blocks remaining:   $((headers - blocks))\n"
-    sync_status="${sync_status}Current chain tip:  $(date -d @"${last_block_time}" | cut -c 5-)\n\n"
+    sync_status="${sync_status}Current chain tip:  $(date -d @"${last_block_time}" | cut -c 5-)\n"
   fi
 
   sync_status="${sync_status}\nChain sync size:    "
