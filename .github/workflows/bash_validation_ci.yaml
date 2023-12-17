@@ -22,7 +22,6 @@ jobs:
         uses: ludeeus/action-shellcheck@master
         with:
           ignore_names: offloadcoredata usei2p usetor
-          #scan_dir: './'
           
       - name: Lint with shfmt
         uses: luizm/action-sh-checker@master
@@ -33,4 +32,4 @@ jobs:
           sh_checker_exclude: offloadcoredata usei2p usetor
 
       - name: Run nodebuilder
-        run: timeout 300 ./nodebuilder || [[ "$?" -eq "124" ]] && true
+        run: timeout 600 ./nodebuilder || [[ "$?" -eq "124" ]] && true
