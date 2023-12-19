@@ -71,10 +71,9 @@ sleep_time="10"
 }
 
 clear
-echo -n "Performing a full system upgrade... "
-sudo apt-get -qq update && echo
+sudo apt-get -qq update
+echo -n "Performing a system upgrade... "
 sudo NEEDRESTART_MODE=a apt-get -qq dist-upgrade --assume-yes
-
 if [ -f /var/run/reboot-required ]; then
   echo -en "\nREBOOT REQUIRED to upgrade the following:\n$(cat /var/run/reboot-required.pkgs)\n\nPRESS ANY KEY to reboot or press Ctrl+C to exit... "
   read -rsn1 && echo
@@ -82,9 +81,11 @@ if [ -f /var/run/reboot-required ]; then
   sudo reboot
   exit 0
 fi
+echo "ok."
 
-echo "Checking for dependencies... "
+echo -n "Checking for dependencies..."
 sudo apt-get -qq update && sudo apt-get -qq install --assume-yes --no-install-recommends curl git gnupg jq libxcb-xinerama0
+echo "ok."
 
 echo -n "Checking for Bitcoin ${target_bitcoin_version}... "
 if [ -f "${bitcoin_core_binary_dir}"/bitcoin-qt ]; then
