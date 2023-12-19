@@ -9,6 +9,7 @@ log_error() {
   echo "[$(date +'%Y-%m-%dT%H:%M:%S')]: ERROR $*" >&2
 }
 
+# shellcheck disable=SC2317
 ensure_cursor_is_on_column_one() {
   echo -en "\E[6n"
   read -rsdR cursor_position
@@ -17,10 +18,12 @@ ensure_cursor_is_on_column_one() {
   ([ "${cursor_position_column}" -gt 1 ] && echo) || true
 }
 
+# shellcheck disable=SC2317
 handle_exit() {
   rm -rf -- "${tmp_dir}"
 }
 
+# shellcheck disable=SC2317
 handle_error() {
   ensure_cursor_is_on_column_one
   log_error "Command '$2 $3' failed at line $1."
