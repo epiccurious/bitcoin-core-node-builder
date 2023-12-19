@@ -331,12 +331,9 @@ while [[ "${ibd_status}" == "true" ]]; do
   echo -e "Synchronizing can take weeks on a slow connection.\n"
   echo -e "Close this Terminal window by clicking on the \"X\"."
   echo -n "This screen will refresh in ${sleep_time} seconds."
-  for ((i = 1; i <= sleep_time; i++)); do
-    sleep 1
-    printf "."
-  done
+  sleep "${sleep_time}"
 
-  if [ "${CI:-false}" = true ]; then
+  if [ "${CI:-false}" = true ] && [ "${blocks}" -ge 10 ]; then
     echo "Exiting the script for CI runners."
     exit 0
   fi
