@@ -67,7 +67,6 @@ timeout --preserve-status 0.1 nc -z 1.1.1.1 53 ||
   exit 1
 }
 
-# Perform a full system upgrade (comparable to running Ubuntu System Updater)
 clear
 echo -n "Performing a full system upgrade... "
 sudo apt-get -qq update && echo
@@ -81,7 +80,6 @@ if [ -f /var/run/reboot-required ]; then
   exit 0
 fi
 
-# Install dependencies
 echo "Checking for dependencies... "
 sudo apt-get -qq update && sudo apt-get -qq install --assume-yes --no-install-recommends curl git gnupg jq libxcb-xinerama0
 
@@ -105,7 +103,6 @@ else
     curl --silent --show-error --location --fail --output "${gpg_signatures_file}" "${gpg_signatures_file_source}"
     echo "ok"
 
-    # Check that the release file's checksum is listed in SHA256SUMS
     echo -n "  Validating the checksum... "
     cd "${tmp_dir}"/
     sha256_check=$(grep ${bitcoin_tarball_filename} ${bitcoin_hash_filename} | sha256sum --check 2> /dev/null)
@@ -121,7 +118,6 @@ else
       exit 1
     fi
 
-    # Check the PGP signatures of SHA256SUMS
     echo -n "  Validating the signatures... "
     if [ -d "${guix_sigs_destination_dir}"/ ]; then
       gpg --quiet --import "${guix_sigs_destination_dir}"/builder-keys/*.gpg
@@ -165,7 +161,6 @@ fi
 echo "ok."
 
 echo -n "Creating application shortcuts... "
-## Create shortcut on the Desktop and in the "Show Applications" view
 desktop_path="${HOME}/Desktop"
 applications_path="${HOME}/.local/share/applications"
 shortcut_filename="bitcoin_core.desktop"
@@ -187,7 +182,6 @@ Type=Application
 Categories=Application;
 MimeType=application/bitcoin-paymentrequest;application/bitcoin-payment;application/bitcoin-paymentack;x-scheme-handler/bitcoin;
 EOF
-## Make the shortcuts user-executable
 chmod u+x "${applications_path}"/"${shortcut_filename}"
 chmod u+x "${desktop_path}"/"${shortcut_filename}"
 ## Make the desktop shortcut trusted
@@ -343,7 +337,6 @@ while [[ "${ibd_status}" == "true" ]]; do
     exit 0
   fi
 
-  # Check for updated sync state
   blockchain_info=$("${bitcoin_core_binary_dir}"/bitcoin-cli --rpcwait getblockchaininfo)
   echo
   ibd_status=$(echo "${blockchain_info}" | jq '.initialblockdownload')
