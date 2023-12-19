@@ -11,10 +11,10 @@ log_error() {
 
 ensure_cursor_is_on_column_one() {
   echo -en "\E[6n"
-  read -sdR cursor_position
+  read -rsdR cursor_position
   cursor_position="${cursor_position#*[}"
   cursor_position_column="$(echo "${cursor_position}" | cut -d ";" -f 2)"
-  [ "${cursor_position_column}" -gt 1 ] && echo || true
+  ([ "${cursor_position_column}" -gt 1 ] && echo) || true
 }
 
 handle_exit() {
@@ -59,9 +59,9 @@ bitcoin_core_chainstate_dir="${bitcoin_core_data_dir}/chainstate"
 
 sleep_time="10"
 
-timeout --preserve-status 0.1 nc -z 1.1.1.1 53 ||
-  timeout --preserve-status 0.1 nc -z 8.8.8.8 53 ||
-  timeout --preserve-status 0.5 nc -z bitcoincore.org 443 || {
+(timeout --preserve-status 0.1 nc -z 1.1.1.1 53 &&
+  timeout --preserve-status 0.1 nc -z 8.8.8.8 53 &&
+  timeout --preserve-status 0.5 nc -z bitcoincore.org 443) || {
   err "ERROR: Check for active internet failed."
   echo "Exiting."
   exit 1
