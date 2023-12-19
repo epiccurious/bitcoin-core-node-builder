@@ -12,8 +12,8 @@ env:
   TERM: xterm
 
 jobs:
-  steps:
-    name: Bash Validation
+  validate-shellcheck:
+    name: Validate with ShellCheck
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -22,7 +22,11 @@ jobs:
         uses: ludeeus/action-shellcheck@master
         with:
           ignore_names: offloadcoredata usei2p usetor
-          
+
+  validate-shfmt:
+    name: Validate with shfmt
+    runs-on: ubuntu-latest
+    steps:
       - name: Lint with shfmt
         uses: luizm/action-sh-checker@master
         env:
@@ -31,5 +35,13 @@ jobs:
           sh_checker_shellcheck_disable: true
           sh_checker_exclude: offloadcoredata usei2p usetor
 
+  run-nodebuilder:
+    name: Execute nodebuilder 
+    runs-on: ubuntu-latest
+    needs: [validate-shellcheck, validate-shfmt]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install runtime dependency libxcb-xinerama0
+        run: sudo apt-get install --assume-yes --no-install-recommends libxcb-xinerama0
       - name: Run nodebuilder
-        run: timeout 600 /bin/bash -x ./nodebuilder || [[ "$?" -eq "124" ]] && true
+        run: timeout 240 /bin/bash -x ./nodebuilder
