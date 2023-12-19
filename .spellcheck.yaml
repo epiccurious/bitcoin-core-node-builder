@@ -3,6 +3,10 @@ matrix:
   aspell:
     lang: en
     d: en_US
+  dictionary:
+    wordlists:
+    - src/pyspelling.wordlist.txt
+    encoding: utf-8
   sources:
   - '**/*.md'
   default_encoding: utf-8
