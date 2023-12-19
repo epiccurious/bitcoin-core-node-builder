@@ -65,7 +65,7 @@ Before launching Bitcoin Core, this script modifies the following files:
 
 ## YouTube Playlist
 
-Follow the changes to this repository on [our YouTube playlist](https://www.youtube.com/playlist?list=PL3dr_BSAPOFSaozbtQ1wZM2enpdJIY_5T).
+Follow the changes to this repository on [our YouTube playlist](https://youtube.com/playlist?list=PL3dr_BSAPOFSaozbtQ1wZM2enpdJIY_5T).
 
 ## Acknowledgements
 
@@ -78,7 +78,7 @@ Inspiration for this project came from these Open Source projects:
 
 And from these guides:
 - [Running A Full Node](https://bitcoin.org/en/full-node) by [Bitcoin.org contributors](https://bitcoin.org)
-- [Bitcoin & Lightning Server](https://www.youtube.com/watch?v=_Hrnls92TxQ) by [402 Payment Required](https://www.youtube.com/@402PaymentRequired)
+- [Bitcoin & Lightning Server](https://youtube.com/watch?v=_Hrnls92TxQ) by [402 Payment Required](https://youtube.com/@402PaymentRequired)
 - [Running Bitcoin & Lightning Nodes](https://stopanddecrypt.medium.com/running-bitcoin-lightning-nodes-over-the-tor-network-2021-edition-489180297d5) by [StopAndDecrypt](https://stopanddecrypt.medium.com/)
 
 ## License
