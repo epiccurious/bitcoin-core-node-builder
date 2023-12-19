@@ -5,6 +5,30 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+log_error() {
+  echo "[$(date +'%Y-%m-%dT%H:%M:%S')]: ERROR $*" >&2
+}
+
+ensure_cursor_is_on_column_one() {
+  echo -en "\E[6n"
+  read -sdR cursor_position
+  cursor_position="${cursor_position#*[}"
+  cursor_position_column="$(echo "${cursor_position}" | cut -d ";" -f 2)"
+  [ "${cursor_position_column}" -gt 1 ] && echo || true
+}
+
+handle_exit() {
+  rm -rf -- "${tmp_dir}"
+}
+
+handle_error() {
+  ensure_cursor_is_on_column_one
+  log_error "Command '$2 $3' failed at line $1."
+}
+
+trap handle_exit EXIT
+trap 'handle_error ${LINENO:-} ${LASTNO:-} ${BASH_COMMAND:-}' ERR
+
 target_bitcoin_version="26.0"
 bitcoin_source="https://bitcoincore.org/bin/bitcoin-core-${target_bitcoin_version}"
 bitcoin_tarball_filename="bitcoin-${target_bitcoin_version}-x86_64-linux-gnu.tar.gz"
@@ -18,7 +42,6 @@ gpg_signatures_file_source="${bitcoin_source}/${gpg_signatures_filename}"
 guix_sigs_repo="https://github.com/bitcoin-core/guix.sigs.git"
 
 tmp_dir="$(mktemp -d)"
-trap 'rm -rf -- "$tmp_dir"' EXIT
 bitcoin_tarball_temporary_file="${tmp_dir}/${bitcoin_tarball_filename}"
 bitcoin_tarball_destination_file="${HOME}/Downloads/${bitcoin_tarball_filename}"
 bitcoin_hash_file="${tmp_dir}/${bitcoin_hash_filename}"
@@ -36,11 +59,6 @@ bitcoin_core_chainstate_dir="${bitcoin_core_data_dir}/chainstate"
 
 sleep_time="10"
 
-err() {
-  echo "[$(date +'%Y-%m-%dT%H:%M:%S%z')]: $*" >&2
-}
-
-# Check for active internet
 timeout --preserve-status 0.1 nc -z 1.1.1.1 53 ||
   timeout --preserve-status 0.1 nc -z 8.8.8.8 53 ||
   timeout --preserve-status 0.5 nc -z bitcoincore.org 443 || {
@@ -140,7 +158,7 @@ echo -n "Running the unit tests... "
 unit_test_response="$("${bitcoin_core_binary_dir}"/test_bitcoin --log_level=nothing 2>&1)"
 if [[ "${unit_test_response}" != *"No errors detected"* ]]; then
   echo -e "\n${unit_test_response}"
-  err "ERROR: Unit tests failed!"
+  log_error "Unit tests failed!"
   echo "Exiting."
   exit 1
 fi
