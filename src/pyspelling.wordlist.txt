@@ -1,15 +1,17 @@
 Acknowledgements
 ArmanTheParman
 Addy
-BSAPOFSaozbtQ1wZM2enpdJIY
+BSAPOFSaozbtQ
 BenWestgate
-Hrnls92TxQ
 JWWeatherman
 LTS
 Parmanode
 PaymentRequired
 StopAndDecrypt
 SHA
+TxQ
+Westgate
+Yeow
 acknowledgements
 armantheparman
 asc
@@ -17,6 +19,7 @@ ayeowch
 bitnodes
 conf
 dr
+enpdJIY
 epiccurious
 fsSL
 github
@@ -33,4 +36,6 @@ stopanddecrypt
 sudo
 tmp
 ubuntu
+wZM
+yeticold
 youtube
