@@ -1,0 +1,58 @@
+name: Bash CI
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+  workflow_dispatch:
+
+env:
+  TERM: xterm
+
+jobs:
+
+  bash-lint:
+    name: Validate with ShellCheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Lint with shellcheck
+        uses: ludeeus/action-shellcheck@master
+        with:
+          ignore_names: offloadcoredata usei2p usetor
+
+  bash-format:
+    name: Validate with shfmt
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Lint with shfmt
+        uses: luizm/action-sh-checker@master
+        env:
+          SHFMT_OPTS: -i 2 -sr
+        with:
+          sh_checker_shellcheck_disable: true
+          sh_checker_exclude: offloadcoredata usei2p usetor
+  
+  markdown-links:
+    name: Validation with markdown-link-check
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+    - name: Run markdown-link-check on Documentation
+      uses: gaurav-nelson/github-action-markdown-link-check@v1
+      with:
+        use-verbose-mode: 'yes'
+
+  run-nodebuilder:
+    name: Execute nodebuilder 
+    runs-on: ubuntu-latest
+    needs: [bash-lint, bash-format]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install runtime dependency libxcb-xinerama0
+        run: sudo apt-get update && sudo apt-get install --assume-yes --no-install-recommends libxcb-xinerama0
+      - name: Run nodebuilder
+        run: timeout 240 /bin/bash -x ./nodebuilder
