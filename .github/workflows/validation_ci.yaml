@@ -46,6 +46,23 @@ jobs:
       with:
         use-verbose-mode: 'yes'
 
+  markdown-spellcheck:
+    name: Validation with PySpelling
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: rojopolis/spellcheck-github-actions@0.5.0
+        name: Spellcheck
+        with:
+          source_files: README.md
+          task_name: Markdown
+          output_file: spellcheck-output.txt
+      - uses: actions/upload-artifact@v3
+        if: '!cancelled()'
+        with:
+          name: Spellcheck Output
+          path: spellcheck-output.txt
+
   run-nodebuilder:
     name: Execute nodebuilder 
     runs-on: ubuntu-latest
