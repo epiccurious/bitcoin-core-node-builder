@@ -52,7 +52,9 @@ jobs:
     needs: [bash-lint, bash-format]
     steps:
       - uses: actions/checkout@v4
+      - name: Install system upgrades
+        run: sudo apt-get update && sudo NEEDRESTART_MODE=a apt-get dist-upgrade -y
       - name: Install runtime dependency libxcb-xinerama0
-        run: sudo apt-get update && sudo apt-get install --assume-yes --no-install-recommends libxcb-xinerama0
+        run: sudo apt-get update && sudo apt-get install -y libxcb-xinerama0
       - name: Run nodebuilder
-        run: timeout 240 /bin/bash -x ./nodebuilder
+        run: timeout 600 /bin/bash -x ./nodebuilder

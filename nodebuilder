@@ -5,6 +5,33 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+log_error() {
+  echo "[$(date +'%Y-%m-%dT%H:%M:%S')]: ERROR $*" >&2
+}
+
+# shellcheck disable=SC2317
+ensure_cursor_is_on_column_one() {
+  echo -en "\E[6n"
+  read -rsdR cursor_position
+  cursor_position="${cursor_position#*[}"
+  cursor_position_column="$(echo "${cursor_position}" | cut -d ";" -f 2)"
+  ([ "${cursor_position_column}" -gt 1 ] && echo) || true
+}
+
+# shellcheck disable=SC2317
+handle_exit() {
+  rm -rf -- "${tmp_dir}"
+}
+
+# shellcheck disable=SC2317
+handle_error() {
+  ensure_cursor_is_on_column_one
+  log_error "Command '$2 $3' failed at line $1."
+}
+
+trap handle_exit EXIT
+trap 'handle_error ${LINENO:-} ${LASTNO:-} ${BASH_COMMAND:-}' ERR
+
 target_bitcoin_version="26.0"
 bitcoin_source="https://bitcoincore.org/bin/bitcoin-core-${target_bitcoin_version}"
 bitcoin_tarball_filename="bitcoin-${target_bitcoin_version}-x86_64-linux-gnu.tar.gz"
@@ -18,7 +45,6 @@ gpg_signatures_file_source="${bitcoin_source}/${gpg_signatures_filename}"
 guix_sigs_repo="https://github.com/bitcoin-core/guix.sigs.git"
 
 tmp_dir="$(mktemp -d)"
-trap 'rm -rf -- "$tmp_dir"' EXIT
 bitcoin_tarball_temporary_file="${tmp_dir}/${bitcoin_tarball_filename}"
 bitcoin_tarball_destination_file="${HOME}/Downloads/${bitcoin_tarball_filename}"
 bitcoin_hash_file="${tmp_dir}/${bitcoin_hash_filename}"
@@ -36,25 +62,18 @@ bitcoin_core_chainstate_dir="${bitcoin_core_data_dir}/chainstate"
 
 sleep_time="10"
 
-err() {
-  echo "[$(date +'%Y-%m-%dT%H:%M:%S%z')]: $*" >&2
-}
-
-# Check for active internet
-timeout --preserve-status 0.1 nc -z 1.1.1.1 53 ||
-  timeout --preserve-status 0.1 nc -z 8.8.8.8 53 ||
-  timeout --preserve-status 0.5 nc -z bitcoincore.org 443 || {
+(timeout --preserve-status 0.1 nc -z 1.1.1.1 53 &&
+  timeout --preserve-status 0.1 nc -z 8.8.8.8 53 &&
+  timeout --preserve-status 0.5 nc -z bitcoincore.org 443) || {
   err "ERROR: Check for active internet failed."
   echo "Exiting."
   exit 1
 }
 
-# Perform a full system upgrade (comparable to running Ubuntu System Updater)
 clear
-echo -n "Performing a full system upgrade... "
-sudo apt-get -qq update && echo
+sudo apt-get -qq update
+echo -n "Performing a system upgrade... "
 sudo NEEDRESTART_MODE=a apt-get -qq dist-upgrade --assume-yes
-
 if [ -f /var/run/reboot-required ]; then
   echo -en "\nREBOOT REQUIRED to upgrade the following:\n$(cat /var/run/reboot-required.pkgs)\n\nPRESS ANY KEY to reboot or press Ctrl+C to exit... "
   read -rsn1 && echo
@@ -62,10 +81,11 @@ if [ -f /var/run/reboot-required ]; then
   sudo reboot
   exit 0
 fi
+echo "ok."
 
-# Install dependencies
-echo "Checking for dependencies... "
+echo -n "Checking for dependencies..."
 sudo apt-get -qq update && sudo apt-get -qq install --assume-yes --no-install-recommends curl git gnupg jq libxcb-xinerama0
+echo "ok."
 
 echo -n "Checking for Bitcoin ${target_bitcoin_version}... "
 if [ -f "${bitcoin_core_binary_dir}"/bitcoin-qt ]; then
@@ -87,7 +107,6 @@ else
     curl --silent --show-error --location --fail --output "${gpg_signatures_file}" "${gpg_signatures_file_source}"
     echo "ok"
 
-    # Check that the release file's checksum is listed in SHA256SUMS
     echo -n "  Validating the checksum... "
     cd "${tmp_dir}"/
     sha256_check=$(grep ${bitcoin_tarball_filename} ${bitcoin_hash_filename} | sha256sum --check 2> /dev/null)
@@ -103,7 +122,6 @@ else
       exit 1
     fi
 
-    # Check the PGP signatures of SHA256SUMS
     echo -n "  Validating the signatures... "
     if [ -d "${guix_sigs_destination_dir}"/ ]; then
       gpg --quiet --import "${guix_sigs_destination_dir}"/builder-keys/*.gpg
@@ -140,14 +158,13 @@ echo -n "Running the unit tests... "
 unit_test_response="$("${bitcoin_core_binary_dir}"/test_bitcoin --log_level=nothing 2>&1)"
 if [[ "${unit_test_response}" != *"No errors detected"* ]]; then
   echo -e "\n${unit_test_response}"
-  err "ERROR: Unit tests failed!"
+  log_error "Unit tests failed!"
   echo "Exiting."
   exit 1
 fi
 echo "ok."
 
 echo -n "Creating application shortcuts... "
-## Create shortcut on the Desktop and in the "Show Applications" view
 desktop_path="${HOME}/Desktop"
 applications_path="${HOME}/.local/share/applications"
 shortcut_filename="bitcoin_core.desktop"
@@ -169,7 +186,6 @@ Type=Application
 Categories=Application;
 MimeType=application/bitcoin-paymentrequest;application/bitcoin-payment;application/bitcoin-paymentack;x-scheme-handler/bitcoin;
 EOF
-## Make the shortcuts user-executable
 chmod u+x "${applications_path}"/"${shortcut_filename}"
 chmod u+x "${desktop_path}"/"${shortcut_filename}"
 ## Make the desktop shortcut trusted
@@ -290,6 +306,7 @@ while [[ "${ibd_status}" == "true" ]]; do
     sync_status="${sync_status}Pre-syncing the block headers (first pass).\n"
   elif [ "${blocks}" -eq 0 ]; then
     sync_status="${sync_status}Syncing the block headers (second pass).\n"
+    sync_status="${sync_status}Headers synced:     ${headers}"
   else
     sync_status="${sync_status}Sync progress:      $(printf '%.3f' "${sync_progress_percent}") %\n"
     sync_status="${sync_status}Blocks remaining:   $((headers - blocks))\n"
@@ -315,17 +332,13 @@ while [[ "${ibd_status}" == "true" ]]; do
   echo -e "Synchronizing can take weeks on a slow connection.\n"
   echo -e "Close this Terminal window by clicking on the \"X\"."
   echo -n "This screen will refresh in ${sleep_time} seconds."
-  for ((i = 1; i <= sleep_time; i++)); do
-    sleep 1
-    printf "."
-  done
+  sleep "${sleep_time}"
 
-  if [ "${CI:-false}" = true ]; then
+  if [ "${CI:-false}" = true ] && [ "${size_on_disk_in_mib}" -ge 1 ]; then
     echo "Exiting the script for CI runners."
     exit 0
   fi
 
-  # Check for updated sync state
   blockchain_info=$("${bitcoin_core_binary_dir}"/bitcoin-cli --rpcwait getblockchaininfo)
   echo
   ibd_status=$(echo "${blockchain_info}" | jq '.initialblockdownload')
