@@ -20,7 +20,7 @@ _**After**_ opening a pull request, GitHub Actions CI will [automatically run th
 
 ### Details About the Validation Tools
 
-[`ShellCheck`](https://www.shellcheck.net/) gives warnings and suggestions for bash/sh shell scripts, including:
+[`ShellCheck`](https://shellcheck.net/) gives warnings and suggestions for bash/sh shell scripts, including:
 - typical beginner's syntax issues that cause a shell to give cryptic error messages
 - typical intermediate level semantic problems that cause a shell to behave strangely and counter-intuitively.
 - subtle caveats, corner cases and pitfalls that may cause an advanced user's otherwise working script to fail under future circumstances.
