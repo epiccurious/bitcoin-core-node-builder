@@ -110,7 +110,7 @@ else
 
     echo -n "  Validating the checksum... "
     cd "${tmp_dir}"/
-    sha256_check=$(grep ${bitcoin_tarball_filename} ${bitcoin_hash_filename} | sha256sum --check 2> /dev/null)
+    sha256_check="$(grep "${bitcoin_tarball_filename}" "${bitcoin_hash_filename}" | sha256sum --check 2> /dev/null)"
     cd "${HOME}"/
     if [[ "${sha256_check}" == *"OK" ]]; then
       echo "ok."
