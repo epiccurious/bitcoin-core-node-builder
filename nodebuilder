@@ -33,8 +33,9 @@ trap handle_exit EXIT
 trap 'handle_error ${LINENO:-} ${LASTNO:-} ${BASH_COMMAND:-}' ERR
 
 target_bitcoin_version="26.0"
+target_bitcoin_architecture="$(uname -m)"
 bitcoin_source="https://bitcoincore.org/bin/bitcoin-core-${target_bitcoin_version}"
-bitcoin_tarball_filename="bitcoin-${target_bitcoin_version}-x86_64-linux-gnu.tar.gz"
+bitcoin_tarball_filename="bitcoin-${target_bitcoin_version}-${target_bitcoin_architecture}-linux-gnu.tar.gz"
 bitcoin_hash_filename="SHA256SUMS"
 gpg_signatures_filename="SHA256SUMS.asc"
 gpg_good_signatures_required="7"
