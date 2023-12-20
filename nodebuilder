@@ -178,8 +178,8 @@ cat << EOF | tee "${applications_path}"/"${shortcut_filename}" > "${desktop_path
 [Desktop Entry]
 Name=Bitcoin Core
 Comment=Launch Bitcoin Core
-Exec=${HOME}/bitcoin/bin/bitcoin-qt %u
-Icon=${HOME}/bitcoin/bitcoin.png
+Exec=${bitcoin_core_binary_dir}/bitcoin-qt %u
+Icon=${bitcoin_core_extract_dir}/bitcoin.png
 Terminal=false
 StartupWMClass=Bitcoin Core
 Type=Application
