@@ -26,11 +26,11 @@ handle_exit() {
 # shellcheck disable=SC2317
 handle_error() {
   ensure_cursor_is_on_column_one
-  log_error "Command '$2 $3' failed at line $1."
+  log_error "Command '$1 $2' failed at line $3."
 }
 
 trap handle_exit EXIT
-trap 'handle_error ${LINENO:-} ${LASTNO:-} ${BASH_COMMAND:-}' ERR
+trap 'handle_error ${LASTNO:-} ${BASH_COMMAND:-} ${LINENO:-}' ERR
 
 target_bitcoin_version="26.0"
 target_bitcoin_architecture="$(uname -m)"
