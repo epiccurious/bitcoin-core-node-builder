@@ -51,11 +51,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: rojopolis/spellcheck-github-actions@0.5.0
-        name: Spellcheck
+      - uses: rojopolis/spellcheck-github-actions@v0
+        name: Spell Check Markdown Files
         with:
-          source_files: README.md
-          task_name: Markdown
           output_file: spellcheck-output.txt
       - uses: actions/upload-artifact@v3
         if: '!cancelled()'
