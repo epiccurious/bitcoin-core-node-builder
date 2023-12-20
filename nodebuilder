@@ -26,15 +26,16 @@ handle_exit() {
 # shellcheck disable=SC2317
 handle_error() {
   ensure_cursor_is_on_column_one
-  log_error "Command '$2 $3' failed at line $1."
+  log_error "Command '$1 $2' failed at line $3."
 }
 
 trap handle_exit EXIT
-trap 'handle_error ${LINENO:-} ${LASTNO:-} ${BASH_COMMAND:-}' ERR
+trap 'handle_error ${LASTNO:-} ${BASH_COMMAND:-} ${LINENO:-}' ERR
 
 target_bitcoin_version="26.0"
+target_bitcoin_architecture="$(uname -m)"
 bitcoin_source="https://bitcoincore.org/bin/bitcoin-core-${target_bitcoin_version}"
-bitcoin_tarball_filename="bitcoin-${target_bitcoin_version}-x86_64-linux-gnu.tar.gz"
+bitcoin_tarball_filename="bitcoin-${target_bitcoin_version}-${target_bitcoin_architecture}-linux-gnu.tar.gz"
 bitcoin_hash_filename="SHA256SUMS"
 gpg_signatures_filename="SHA256SUMS.asc"
 gpg_good_signatures_required="7"
@@ -109,7 +110,7 @@ else
 
     echo -n "  Validating the checksum... "
     cd "${tmp_dir}"/
-    sha256_check=$(grep ${bitcoin_tarball_filename} ${bitcoin_hash_filename} | sha256sum --check 2> /dev/null)
+    sha256_check="$(grep "${bitcoin_tarball_filename}" "${bitcoin_hash_filename}" | sha256sum --check 2> /dev/null)"
     cd "${HOME}"/
     if [[ "${sha256_check}" == *"OK" ]]; then
       echo "ok."
