@@ -37,7 +37,7 @@ jobs:
           sh_checker_exclude: offloadcoredata usei2p usetor
   
   markdown-links:
-    name: Validation with markdown-link-check
+    name: Validate with markdown-link-check
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@master
@@ -47,7 +47,7 @@ jobs:
         use-verbose-mode: 'yes'
 
   markdown-spellcheck:
-    name: Validation with PySpelling
+    name: Validate with PySpelling
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -64,7 +64,7 @@ jobs:
   run-nodebuilder:
     name: Execute nodebuilder 
     runs-on: ubuntu-latest
-    needs: [bash-lint, bash-format]
+    needs: [bash-lint, bash-format, markdown-links, markdown-spellcheck]
     steps:
       - uses: actions/checkout@v4
       - name: Install system upgrades
