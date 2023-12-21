@@ -20,7 +20,7 @@ ensure_cursor_is_on_column_one() {
 
 # shellcheck disable=SC2317
 handle_exit() {
-  [ -z "${tmp_dir}" ] && rm -rf -- "${tmp_dir}"
+  [ -z "${temp_directory}" ] && rm -rf -- "${temp_directory:?}"/
 }
 
 # shellcheck disable=SC2317
@@ -45,24 +45,24 @@ bitcoin_hash_file_source="${bitcoin_source}/${bitcoin_hash_filename}"
 gpg_signatures_file_source="${bitcoin_source}/${gpg_signatures_filename}"
 guix_sigs_repo="https://github.com/bitcoin-core/guix.sigs.git"
 
-tmp_dir="$(mktemp -d)"
-bitcoin_tarball_temporary_file="${tmp_dir}/${bitcoin_tarball_filename}"
+temp_directory="$(mktemp -d)"
+bitcoin_tarball_temporary_file="${temp_directory}/${bitcoin_tarball_filename}"
 bitcoin_tarball_destination_file="${HOME}/Downloads/${bitcoin_tarball_filename}"
-bitcoin_hash_file="${tmp_dir}/${bitcoin_hash_filename}"
-gpg_signatures_file="${tmp_dir}/${gpg_signatures_filename}"
-guix_sigs_temporary_dir="${tmp_dir}/guix.sigs"
+bitcoin_hash_file="${temp_directory}/${bitcoin_hash_filename}"
+gpg_signatures_file="${temp_directory}/${gpg_signatures_filename}"
+guix_sigs_temporary_dir="${temp_directory}/guix.sigs"
 guix_sigs_destination_dir="${HOME}/Downloads/guix.sigs"
 
-user_data_dir="${XDG_DATA_HOME:-${HOME}/.local/share}"
-bitcoin_core_extract_dir="${HOME}/bitcoin"
+bitcoin_core_extract_dir="${temp_directory}/bitcoin"
 bitcoin_install_bin_source="${bitcoin_core_extract_dir}/bin"
-bitcoin_install_bin_destination="/usr/local/bin"
 bitcoin_install_include_source="${bitcoin_core_extract_dir}/include"
-bitcoin_install_include_destination="/usr/local/include"
 bitcoin_install_lib_source="${bitcoin_core_extract_dir}/lib"
-bitcoin_install_lib_destination="/usr/local/lib"
 bitcoin_install_man_source="${bitcoin_core_extract_dir}/share/man/man1"
+bitcoin_install_bin_destination="/usr/local/bin"
+bitcoin_install_include_destination="/usr/local/include"
+bitcoin_install_lib_destination="/usr/local/lib"
 bitcoin_install_man_destination="/usr/local/share/man/man1"
+user_data_dir="${XDG_DATA_HOME:-${HOME}/.local/share}"
 
 bitcoin_core_data_dir="${HOME}/.bitcoin"
 bitcoin_core_config_file="${bitcoin_core_data_dir}/bitcoin.conf"
@@ -105,11 +105,11 @@ fi
 
 if [[ "${current_bitcoin_version}" == *"${target_bitcoin_version}"* ]]; then
   echo "ok."
+  rm -r "${temp_directory:?}"/
+
 else
   echo
-  if [ -f "${bitcoin_tarball_destination_file}" ]; then
-    rm -r "${tmp_dir:?}"/
-  else
+  if ! [ -f "${bitcoin_tarball_destination_file}" ]; then
     echo -n "  Downloading Bitcoin Core... "
     curl --silent --show-error --location --fail --output "${bitcoin_tarball_temporary_file}" "${bitcoin_tarball_file_source}"
     curl --silent --show-error --location --fail --output "${bitcoin_hash_file}" "${bitcoin_hash_file_source}"
@@ -117,14 +117,14 @@ else
     echo "ok"
 
     echo -n "  Validating the checksum... "
-    cd "${tmp_dir}"/
+    cd "${temp_directory}"/
     sha256_check="$(grep "${bitcoin_tarball_filename}" "${bitcoin_hash_filename}" | sha256sum --check 2> /dev/null)"
     cd "${HOME}"/
     if [[ "${sha256_check}" == *"OK" ]]; then
       echo "ok."
     else
       err "INVALID. The download has failed. This script cannot continue due to security concerns."
-      err "Please review the temporary file ${tmp_dir}/${bitcoin_hash_file}."
+      err "Please review the temporary file ${temp_directory}/${bitcoin_hash_file}."
       echo -en "\nPRESS ANY KEY to exit... "
       read -rsn1 && echo
       echo "Exiting."
@@ -146,10 +146,9 @@ else
       [ -d "${guix_sigs_destination_dir}"/ ] || mv "${guix_sigs_temporary_dir}" "${guix_sigs_destination_dir}"
       rm "${bitcoin_hash_file}"
       rm "${gpg_signatures_file}"
-      rm -r "${tmp_dir:?}"/
     else
       err "INVALID. The download has failed. This script cannot continue due to security concerns."
-      err "Please review the temporary file ${tmp_dir}/${gpg_signatures_file}."
+      err "Please review the temporary file ${temp_directory}/${gpg_signatures_file}."
       echo -en "\nPRESS ANY KEY to exit... "
       read -rsn1 && echo
       echo "Exiting."
@@ -158,7 +157,7 @@ else
   fi
 
   echo -n "  Extracting Bitcoin Core... "
-  [ -d "${bitcoin_core_extract_dir}" ] || mkdir "${bitcoin_core_extract_dir}"/
+  [ -d "${bitcoin_core_extract_dir}"/ ] || mkdir "${bitcoin_core_extract_dir}"
   tar -xzf "${bitcoin_tarball_destination_file}" -C "${bitcoin_core_extract_dir}"/ --strip-components=1
   echo "ok."
 
@@ -172,31 +171,23 @@ else
   fi
   echo "ok."
 
-  echo -n "  Installing the libraries to /usr/local/lib/... "
+  echo -n "  Installing Bitcoin Core... "
   [ -d "${bitcoin_install_lib_destination}" ] || mkdir -p "${bitcoin_install_lib_destination}"
   sudo cp "${bitcoin_install_lib_source}"/libbitcoinconsensus.so.0.0.0 "${bitcoin_install_lib_destination}"/libbitcoinconsensus.so.0.0.0
   (cd /usr/local/lib && { sudo ln -s -f libbitcoinconsensus.so.0.0.0 libbitcoinconsensus.so.0 || { sudo rm -f libbitcoinconsensus.so.0 && sudo ln -s libbitcoinconsensus.so.0.0.0 libbitcoinconsensus.so.0; }; })
   (cd /usr/local/lib && { sudo ln -s -f libbitcoinconsensus.so.0.0.0 libbitcoinconsensus.so || { sudo rm -f libbitcoinconsensus.so && sudo ln -s libbitcoinconsensus.so.0.0.0 libbitcoinconsensus.so; }; })
-  PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin:/sbin" ldconfig -n /usr/local/lib
-  echo "ok."
-
-  echo -n "  Installing the binaries to ${bitcoin_install_bin_destination}... "
-  mkdir -p "${bitcoin_install_bin_destination}"/
+  PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin:/sbin" ldconfig -n "${bitcoin_install_lib_destination}"
+  [ -d "${bitcoin_install_bin_destination}" ] || mkdir -p "${bitcoin_install_bin_destination}"/
   sudo install -c "${bitcoin_install_bin_source}"/{bitcoind,bitcoin-cli,bitcoin-qt,bitcoin-tx,bitcoin-util,bitcoin-wallet,test_bitcoin} "${bitcoin_install_bin_destination}"/
-  echo "ok."
-
-  echo -n "  Installing the header file to ${bitcoin_install_include_destination}... "
-  mkdir -p "${bitcoin_install_include_destination}"/
+  [ -d "${bitcoin_install_include_destination}" ] || mkdir -p "${bitcoin_install_include_destination}"/
   sudo install -c -m 644 "${bitcoin_install_include_source}"/bitcoinconsensus.h "${bitcoin_install_include_destination}"/
-  echo "ok."
-
-  echo -n "  Installing the manuals to ${bitcoin_install_man_destination}... "
-  mkdir -p "${bitcoin_install_man_destination}"
+  [ -d "${bitcoin_install_man_destination}" ] || mkdir -p "${bitcoin_install_man_destination}"
   sudo install -c -m 644 "${bitcoin_install_man_source}"/{bitcoind.1,bitcoin-qt.1,bitcoin-cli.1,bitcoin-tx.1,bitcoin-util.1,bitcoin-wallet.1} "${bitcoin_install_man_destination}"/
   echo "ok."
 
-  echo -n "Removing the tarball directory... "
-  rm -r "${bitcoin_core_extract_dir}"
+  echo -n "  Removing the tarball directory... "
+  rm -r "${bitcoin_core_extract_dir:?}"/
+  rm -r "${temp_directory:?}"/
   echo "ok."
 fi
 
