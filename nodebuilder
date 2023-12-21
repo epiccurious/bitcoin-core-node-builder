@@ -55,7 +55,6 @@ guix_sigs_destination_dir="${HOME}/Downloads/guix.sigs"
 
 bitcoin_core_extract_dir="${HOME}/bitcoin"
 bitcoin_core_binary_dir="${bitcoin_core_extract_dir}/bin"
-user_data_dir="${XDG_DATA_HOME:-${HOME}/.local/share}"
 
 bitcoin_core_data_dir="${HOME}/.bitcoin"
 bitcoin_core_config_file="${bitcoin_core_data_dir}/bitcoin.conf"
@@ -166,52 +165,12 @@ if [[ "${unit_test_response}" != *"No errors detected"* ]]; then
 fi
 echo "ok."
 
-echo -n "Installing the libraries to /usr/local/lib/... "
-mkdir -p '/usr/local/lib'
-#sudo cp -r "${HOME}"/bitcoin/lib/* /usr/local/lib/
-#libtool --preserve-dup-deps  --mode=install /usr/bin/install -c   libbitcoinconsensus.la '/usr/local/lib'
-/usr/bin/install -c .libs/libbitcoinconsensus.so.0.0.0 /usr/local/lib/libbitcoinconsensus.so.0.0.0
-(cd /usr/local/lib && { ln -s -f libbitcoinconsensus.so.0.0.0 libbitcoinconsensus.so.0 || { rm -f libbitcoinconsensus.so.0 && ln -s libbitcoinconsensus.so.0.0.0 libbitcoinconsensus.so.0; }; })
-(cd /usr/local/lib && { ln -s -f libbitcoinconsensus.so.0.0.0 libbitcoinconsensus.so || { rm -f libbitcoinconsensus.so && ln -s libbitcoinconsensus.so.0.0.0 libbitcoinconsensus.so; }; })
-PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin:/sbin" ldconfig -n /usr/local/lib
-echo "ok."
-
-echo -n "Copying binaries to /usr/local/bin/... "
-mkdir -p '/usr/local/bin'
-#sudo cp -r "${HOME}"/bitcoin/bin/* /usr/local/bin/
-libtool --preserve-dup-deps  --mode=install /usr/bin/install -c bitcoind bitcoin-cli bitcoin-tx bitcoin-wallet bitcoin-util test/test_bitcoin bench/bench_bitcoin qt/bitcoin-qt qt/test/test_bitcoin-qt '/usr/local/bin'
-#install -c bitcoind /usr/local/bin/bitcoind
-#install -c bitcoin-cli /usr/local/bin/bitcoin-cli
-#install -c bitcoin-tx /usr/local/bin/bitcoin-tx
-#install -c bitcoin-wallet /usr/local/bin/bitcoin-wallet
-#install -c bitcoin-util /usr/local/bin/bitcoin-util
-#install -c test/test_bitcoin /usr/local/bin/test_bitcoin
-#install -c bench/bench_bitcoin /usr/local/bin/bench_bitcoin
-#install -c qt/bitcoin-qt /usr/local/bin/bitcoin-qt
-#install -c qt/test/test_bitcoin-qt /usr/local/bin/test_bitcoin-qt
-#install -c bitcoind bitcoin-cli bitcoin-qt bitcoin-tx bitcoin-util bitcoin-wallet test_bitcoin '/usr/local/bin'
-echo "ok."
-
-echo -n "Installing the header file to /usr/local/include/... "
-mkdir -p '/usr/local/include'
-install -c -m 644 include/bitcoinconsensus.h '/usr/local/include'
-echo "ok."
-
-echo -n "Installing the manuals to /usr/local/share/man/man1/... "
-mkdir -p '/usr/local/share/man/man1'
-#sudo cp "${bitcoin_extract_dir}"/share/man/man1/* /usr/local/share/man/man1
-install -c -m 644 bitcoind.1 bitcoin-qt.1 bitcoin-cli.1 bitcoin-tx.1 bitcoin-util.1 bitcoin-wallet.1 '/usr/local/share/man/man1'
-echo "ok."
-
-rm -r "${bitcoin_core_extract_dir}"
-
 echo -n "Creating application shortcuts... "
 desktop_path="${HOME}/Desktop"
-applications_path="${user_data_dir}/applications"
+applications_path="${HOME}/.local/share/applications"
 shortcut_filename="bitcoin_core.desktop"
 
-mkdir -p "${user_data_dir}"/images/
-curl --silent --show-error --location --fail --output "${user_data_dir}"/images/bitcoin.png https://github.com/epiccurious/bitcoin-core-node-builder/raw/master/data/bitcoin.png
+curl --silent --show-error --location --fail --output "${bitcoin_core_extract_dir}"/bitcoin.png https://github.com/epiccurious/bitcoin-core-node-builder/raw/master/data/bitcoin.png
 
 ## Create .desktop on the user's Desktop and "Show Applications" directories
 [ -d "${desktop_path}" ] || mkdir -p "${desktop_path}"
@@ -221,7 +180,7 @@ cat << EOF | tee "${applications_path}"/"${shortcut_filename}" > "${desktop_path
 Name=Bitcoin Core
 Comment=Launch Bitcoin Core
 Exec=${bitcoin_core_binary_dir}/bitcoin-qt %u
-Icon="${HOME}"/.local/share/images/bitcoin.png
+Icon=${bitcoin_core_extract_dir}/bitcoin.png
 Terminal=false
 StartupWMClass=Bitcoin Core
 Type=Application
