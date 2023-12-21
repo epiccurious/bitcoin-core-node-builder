@@ -20,7 +20,7 @@ ensure_cursor_is_on_column_one() {
 
 # shellcheck disable=SC2317
 handle_exit() {
-  rm -rf -- "${tmp_dir}"
+  [ -z "${tmp_dir}" ] && rm -rf -- "${tmp_dir}"
 }
 
 # shellcheck disable=SC2317
@@ -53,8 +53,16 @@ gpg_signatures_file="${tmp_dir}/${gpg_signatures_filename}"
 guix_sigs_temporary_dir="${tmp_dir}/guix.sigs"
 guix_sigs_destination_dir="${HOME}/Downloads/guix.sigs"
 
+user_data_dir="${XDG_DATA_HOME:-${HOME}/.local/share}"
 bitcoin_core_extract_dir="${HOME}/bitcoin"
-bitcoin_core_binary_dir="${bitcoin_core_extract_dir}/bin"
+bitcoin_install_bin_source="${bitcoin_core_extract_dir}/bin"
+bitcoin_install_bin_destination="/usr/local/bin"
+bitcoin_install_include_source="${bitcoin_core_extract_dir}/include"
+bitcoin_install_include_destination="/usr/local/include"
+bitcoin_install_lib_source="${bitcoin_core_extract_dir}/lib"
+bitcoin_install_lib_destination="/usr/local/lib"
+bitcoin_install_man_source="${bitcoin_core_extract_dir}/share/man/man1"
+bitcoin_install_man_destination="/usr/local/share/man/man1"
 
 bitcoin_core_data_dir="${HOME}/.bitcoin"
 bitcoin_core_config_file="${bitcoin_core_data_dir}/bitcoin.conf"
@@ -89,8 +97,8 @@ sudo apt-get -qq update && sudo apt-get -qq install --assume-yes --no-install-re
 echo "ok."
 
 echo -n "Checking for Bitcoin ${target_bitcoin_version}... "
-if [ -f "${bitcoin_core_binary_dir}"/bitcoin-qt ]; then
-  current_bitcoin_version="$("${bitcoin_core_binary_dir}"/bitcoin-qt --version 2> /dev/null | head -1)"
+if command -v bitcoin-qt &> /dev/null; then
+  current_bitcoin_version="$(bitcoin-qt --version 2> /dev/null | head -1)"
 else
   current_bitcoin_version=""
 fi
@@ -127,7 +135,7 @@ else
     if [ -d "${guix_sigs_destination_dir}"/ ]; then
       gpg --quiet --import "${guix_sigs_destination_dir}"/builder-keys/*.gpg
     else
-      git clone --quiet "${guix_sigs_repo}" "${guix_sigs_temporary_dir}"
+      git clone --single-branch --depth 1 --quiet "${guix_sigs_repo}" "${guix_sigs_temporary_dir}"
       gpg --quiet --import "${guix_sigs_temporary_dir}"/builder-keys/*.gpg
     fi
     gpg_good_signature_count=$(gpg --verify "${gpg_signatures_file}" 2>&1 | grep -c "^gpg: Good signature from ")
@@ -153,24 +161,52 @@ else
   [ -d "${bitcoin_core_extract_dir}" ] || mkdir "${bitcoin_core_extract_dir}"/
   tar -xzf "${bitcoin_tarball_destination_file}" -C "${bitcoin_core_extract_dir}"/ --strip-components=1
   echo "ok."
-fi
 
-echo -n "Running the unit tests... "
-unit_test_response="$("${bitcoin_core_binary_dir}"/test_bitcoin --log_level=nothing 2>&1)"
-if [[ "${unit_test_response}" != *"No errors detected"* ]]; then
-  echo -e "\n${unit_test_response}"
-  log_error "Unit tests failed!"
-  echo "Exiting."
-  exit 1
+  echo -n "  Running the unit tests... "
+  unit_test_response="$("${bitcoin_install_bin_source}"/test_bitcoin --log_level=nothing 2>&1)"
+  if [[ "${unit_test_response}" != *"No errors detected"* ]]; then
+    echo -e "\n${unit_test_response}"
+    log_error "Unit tests failed!"
+    echo "Exiting."
+    exit 1
+  fi
+  echo "ok."
+
+  echo -n "  Installing the libraries to /usr/local/lib/... "
+  [ -d "${bitcoin_install_lib_destination}" ] || mkdir -p "${bitcoin_install_lib_destination}"
+  sudo cp "${bitcoin_install_lib_source}"/libbitcoinconsensus.so.0.0.0 "${bitcoin_install_lib_destination}"/libbitcoinconsensus.so.0.0.0
+  (cd /usr/local/lib && { sudo ln -s -f libbitcoinconsensus.so.0.0.0 libbitcoinconsensus.so.0 || { sudo rm -f libbitcoinconsensus.so.0 && sudo ln -s libbitcoinconsensus.so.0.0.0 libbitcoinconsensus.so.0; }; })
+  (cd /usr/local/lib && { sudo ln -s -f libbitcoinconsensus.so.0.0.0 libbitcoinconsensus.so || { sudo rm -f libbitcoinconsensus.so && sudo ln -s libbitcoinconsensus.so.0.0.0 libbitcoinconsensus.so; }; })
+  PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin:/sbin" ldconfig -n /usr/local/lib
+  echo "ok."
+
+  echo -n "  Installing the binaries to ${bitcoin_install_bin_destination}... "
+  mkdir -p "${bitcoin_install_bin_destination}"/
+  sudo install -c "${bitcoin_install_bin_source}"/{bitcoind,bitcoin-cli,bitcoin-qt,bitcoin-tx,bitcoin-util,bitcoin-wallet,test_bitcoin} "${bitcoin_install_bin_destination}"/
+  echo "ok."
+
+  echo -n "  Installing the header file to ${bitcoin_install_include_destination}... "
+  mkdir -p "${bitcoin_install_include_destination}"/
+  sudo install -c -m 644 "${bitcoin_install_include_source}"/bitcoinconsensus.h "${bitcoin_install_include_destination}"/
+  echo "ok."
+
+  echo -n "  Installing the manuals to ${bitcoin_install_man_destination}... "
+  mkdir -p "${bitcoin_install_man_destination}"
+  sudo install -c -m 644 "${bitcoin_install_man_source}"/{bitcoind.1,bitcoin-qt.1,bitcoin-cli.1,bitcoin-tx.1,bitcoin-util.1,bitcoin-wallet.1} "${bitcoin_install_man_destination}"/
+  echo "ok."
+
+  echo -n "Removing the tarball directory... "
+  rm -r "${bitcoin_core_extract_dir}"
+  echo "ok."
 fi
-echo "ok."
 
 echo -n "Creating application shortcuts... "
 desktop_path="${HOME}/Desktop"
-applications_path="${HOME}/.local/share/applications"
+applications_path="${user_data_dir}/applications"
 shortcut_filename="bitcoin_core.desktop"
 
-curl --silent --show-error --location --fail --output "${bitcoin_core_extract_dir}"/bitcoin.png https://github.com/epiccurious/bitcoin-core-node-builder/raw/master/data/bitcoin.png
+mkdir -p "${user_data_dir}"/images/
+curl --silent --show-error --location --fail --output "${user_data_dir}"/images/bitcoin.png https://github.com/epiccurious/bitcoin-core-node-builder/raw/master/data/bitcoin.png
 
 ## Create .desktop on the user's Desktop and "Show Applications" directories
 [ -d "${desktop_path}" ] || mkdir -p "${desktop_path}"
@@ -179,8 +215,8 @@ cat << EOF | tee "${applications_path}"/"${shortcut_filename}" > "${desktop_path
 [Desktop Entry]
 Name=Bitcoin Core
 Comment=Launch Bitcoin Core
-Exec=${bitcoin_core_binary_dir}/bitcoin-qt %u
-Icon=${bitcoin_core_extract_dir}/bitcoin.png
+Exec=bitcoin-qt %u
+Icon="${user_data_dir}"/images/bitcoin.png
 Terminal=false
 StartupWMClass=Bitcoin Core
 Type=Application
@@ -262,17 +298,17 @@ fi
 echo -n "Starting Bitcoin Core... "
 if [ "${CI:-false}" = true ]; then
   echo -en "\n  Starting bitcoind... "
-  "${bitcoin_core_binary_dir}"/bitcoind --daemonwait
+  bitcoind --daemonwait
 else
-  "${bitcoin_core_binary_dir}"/bitcoin-qt 2> /dev/null &
+  bitcoin-qt 2> /dev/null &
   disown
 fi
 echo "ok."
 echo -n "  Checking the RPC status... "
-"${bitcoin_core_binary_dir}"/bitcoin-cli --rpcwait getrpcinfo > /dev/null
+bitcoin-cli --rpcwait getrpcinfo > /dev/null
 echo "ok."
 
-blockchain_info=$("${bitcoin_core_binary_dir}"/bitcoin-cli --rpcwait getblockchaininfo)
+blockchain_info=$(bitcoin-cli --rpcwait getblockchaininfo)
 ibd_status=$(jq '.initialblockdownload' <<< "${blockchain_info}")
 
 if [ "${ibd_status}" = true ]; then
@@ -340,7 +376,7 @@ while [ "${ibd_status}" = true ]; do
     exit 0
   fi
 
-  blockchain_info=$("${bitcoin_core_binary_dir}"/bitcoin-cli --rpcwait getblockchaininfo)
+  blockchain_info=$(bitcoin-cli --rpcwait getblockchaininfo)
   echo
   ibd_status=$(jq '.initialblockdownload' <<< "${blockchain_info}")
 done
