@@ -20,7 +20,7 @@ ensure_cursor_is_on_column_one() {
 
 # shellcheck disable=SC2317
 handle_exit() {
-  rm -rf -- "${tmp_dir}"
+  [ -n "${temp_directory}" ] && rm -rf -- "${temp_directory:?}"/
 }
 
 # shellcheck disable=SC2317
@@ -34,32 +34,12 @@ trap 'handle_error ${LASTNO:-} ${BASH_COMMAND:-} ${LINENO:-}' ERR
 
 target_bitcoin_version="26.0"
 target_bitcoin_architecture="$(uname -m)"
-bitcoin_source="https://bitcoincore.org/bin/bitcoin-core-${target_bitcoin_version}"
-bitcoin_tarball_filename="bitcoin-${target_bitcoin_version}-${target_bitcoin_architecture}-linux-gnu.tar.gz"
-bitcoin_hash_filename="SHA256SUMS"
-gpg_signatures_filename="SHA256SUMS.asc"
-gpg_good_signatures_required="7"
 
-bitcoin_tarball_file_source="${bitcoin_source}/${bitcoin_tarball_filename}"
-bitcoin_hash_file_source="${bitcoin_source}/${bitcoin_hash_filename}"
-gpg_signatures_file_source="${bitcoin_source}/${gpg_signatures_filename}"
-guix_sigs_repo="https://github.com/bitcoin-core/guix.sigs.git"
-
-tmp_dir="$(mktemp -d)"
-bitcoin_tarball_temporary_file="${tmp_dir}/${bitcoin_tarball_filename}"
-bitcoin_tarball_destination_file="${HOME}/Downloads/${bitcoin_tarball_filename}"
-bitcoin_hash_file="${tmp_dir}/${bitcoin_hash_filename}"
-gpg_signatures_file="${tmp_dir}/${gpg_signatures_filename}"
-guix_sigs_temporary_dir="${tmp_dir}/guix.sigs"
-guix_sigs_destination_dir="${HOME}/Downloads/guix.sigs"
-
-bitcoin_core_extract_dir="${HOME}/bitcoin"
-bitcoin_core_binary_dir="${bitcoin_core_extract_dir}/bin"
-
+temp_directory="$(mktemp -d)"
 bitcoin_core_data_dir="${HOME}/.bitcoin"
-bitcoin_core_config_file="${bitcoin_core_data_dir}/bitcoin.conf"
-bitcoin_core_blocks_dir="${bitcoin_core_data_dir}/blocks"
-bitcoin_core_chainstate_dir="${bitcoin_core_data_dir}/chainstate"
+user_data_dir="${XDG_DATA_HOME:-${HOME}/.local/share}"
+shortcut_image_source="https://github.com/epiccurious/bitcoin-core-node-builder/raw/master/data/bitcoin.png"
+shortcut_image_file="${user_data_dir}/images/bitcoin.png"
 
 sleep_time="10"
 
@@ -89,8 +69,8 @@ sudo apt-get -qq update && sudo apt-get -qq install --assume-yes --no-install-re
 echo "ok."
 
 echo -n "Checking for Bitcoin ${target_bitcoin_version}... "
-if [ -f "${bitcoin_core_binary_dir}"/bitcoin-qt ]; then
-  current_bitcoin_version="$("${bitcoin_core_binary_dir}"/bitcoin-qt --version 2> /dev/null | head -1)"
+if command -v bitcoin-qt &> /dev/null; then
+  current_bitcoin_version="$(bitcoin-qt --version 2> /dev/null | head -1)"
 else
   current_bitcoin_version=""
 fi
@@ -99,35 +79,59 @@ if [[ "${current_bitcoin_version}" == *"${target_bitcoin_version}"* ]]; then
   echo "ok."
 else
   echo
-  if [ -f "${bitcoin_tarball_destination_file}" ]; then
-    rm -r "${tmp_dir:?}"/
-  else
+  bitcoin_core_extract_dir="${temp_directory}/bitcoin-core"
+  bitcoin_install_bin_source="${bitcoin_core_extract_dir}/bin"
+  bitcoin_install_include_source="${bitcoin_core_extract_dir}/include"
+  bitcoin_install_lib_source="${bitcoin_core_extract_dir}/lib"
+  bitcoin_install_man_source="${bitcoin_core_extract_dir}/share/man/man1"
+  bitcoin_install_bin_destination="/usr/local/bin"
+  bitcoin_install_include_destination="/usr/local/include"
+  bitcoin_install_lib_destination="/usr/local/lib"
+  bitcoin_install_man_destination="/usr/local/share/man/man1"
+
+  bitcoin_tarball_filename="bitcoin-${target_bitcoin_version}-${target_bitcoin_architecture}-linux-gnu.tar.gz"
+  bitcoin_tarball_destination_file="${HOME}/Downloads/${bitcoin_tarball_filename}"
+
+  if ! [ -f "${bitcoin_tarball_destination_file}" ]; then
+    bitcoin_source="https://bitcoincore.org/bin/bitcoin-core-${target_bitcoin_version}"
+    bitcoin_tarball_file_source="${bitcoin_source}/${bitcoin_tarball_filename}"
+    bitcoin_hash_filename="SHA256SUMS"
+    bitcoin_hash_file_source="${bitcoin_source}/${bitcoin_hash_filename}"
+    gpg_signatures_filename="SHA256SUMS.asc"
+    gpg_signatures_file_source="${bitcoin_source}/${gpg_signatures_filename}"
+    gpg_good_signatures_required="7"
+    guix_sigs_repo="https://github.com/bitcoin-core/guix.sigs.git"
+    bitcoin_tarball_temporary_file="${temp_directory}/${bitcoin_tarball_filename}"
+    bitcoin_hash_file="${temp_directory}/${bitcoin_hash_filename}"
+    gpg_signatures_file="${temp_directory}/${gpg_signatures_filename}"
+    guix_sigs_temporary_dir="${temp_directory}/guix.sigs"
+    guix_sigs_destination_dir="${HOME}/Downloads/guix.sigs"
+
     echo -n "  Downloading Bitcoin Core... "
     curl --silent --show-error --location --fail --output "${bitcoin_tarball_temporary_file}" "${bitcoin_tarball_file_source}"
     curl --silent --show-error --location --fail --output "${bitcoin_hash_file}" "${bitcoin_hash_file_source}"
     curl --silent --show-error --location --fail --output "${gpg_signatures_file}" "${gpg_signatures_file_source}"
-    echo "ok"
+    echo "ok."
 
     echo -n "  Validating the checksum... "
-    cd "${tmp_dir}"/
+    cd "${temp_directory}"/
     sha256_check="$(grep "${bitcoin_tarball_filename}" "${bitcoin_hash_filename}" | sha256sum --check 2> /dev/null)"
     cd "${HOME}"/
-    if [[ "${sha256_check}" == *"OK" ]]; then
-      echo "ok."
-    else
+    if ! [[ "${sha256_check}" == *"OK" ]]; then
       err "INVALID. The download has failed. This script cannot continue due to security concerns."
-      err "Please review the temporary file ${tmp_dir}/${bitcoin_hash_file}."
+      err "Please review the temporary file ${temp_directory}/${bitcoin_hash_file}."
       echo -en "\nPRESS ANY KEY to exit... "
       read -rsn1 && echo
       echo "Exiting."
       exit 1
     fi
+    echo "ok."
 
     echo -n "  Validating the signatures... "
     if [ -d "${guix_sigs_destination_dir}"/ ]; then
       gpg --quiet --import "${guix_sigs_destination_dir}"/builder-keys/*.gpg
     else
-      git clone --quiet "${guix_sigs_repo}" "${guix_sigs_temporary_dir}"
+      git clone --single-branch --depth 1 --quiet "${guix_sigs_repo}" "${guix_sigs_temporary_dir}"
       gpg --quiet --import "${guix_sigs_temporary_dir}"/builder-keys/*.gpg
     fi
     gpg_good_signature_count=$(gpg --verify "${gpg_signatures_file}" 2>&1 | grep -c "^gpg: Good signature from ")
@@ -138,10 +142,9 @@ else
       [ -d "${guix_sigs_destination_dir}"/ ] || mv "${guix_sigs_temporary_dir}" "${guix_sigs_destination_dir}"
       rm "${bitcoin_hash_file}"
       rm "${gpg_signatures_file}"
-      rm -r "${tmp_dir:?}"/
     else
       err "INVALID. The download has failed. This script cannot continue due to security concerns."
-      err "Please review the temporary file ${tmp_dir}/${gpg_signatures_file}."
+      err "Please review the temporary file ${temp_directory}/${gpg_signatures_file}."
       echo -en "\nPRESS ANY KEY to exit... "
       read -rsn1 && echo
       echo "Exiting."
@@ -150,27 +153,47 @@ else
   fi
 
   echo -n "  Extracting Bitcoin Core... "
-  [ -d "${bitcoin_core_extract_dir}" ] || mkdir "${bitcoin_core_extract_dir}"/
+  [ -d "${bitcoin_core_extract_dir}"/ ] || mkdir "${bitcoin_core_extract_dir}"
   tar -xzf "${bitcoin_tarball_destination_file}" -C "${bitcoin_core_extract_dir}"/ --strip-components=1
+  echo "ok."
+
+  echo -n "  Running the unit tests... "
+  unit_test_response="$("${bitcoin_install_bin_source}"/test_bitcoin --log_level=nothing 2>&1)"
+  if [[ "${unit_test_response}" != *"No errors detected"* ]]; then
+    echo -e "\n${unit_test_response}"
+    log_error "Unit tests failed!"
+    echo "Exiting."
+    exit 1
+  fi
+  echo "ok."
+
+  echo -n "  Installing Bitcoin Core... "
+  [ -d "${bitcoin_install_lib_destination}" ] || mkdir -p "${bitcoin_install_lib_destination}"
+  sudo cp "${bitcoin_install_lib_source}"/libbitcoinconsensus.so.0.0.0 "${bitcoin_install_lib_destination}"/libbitcoinconsensus.so.0.0.0
+  (cd /usr/local/lib && { sudo ln -s -f libbitcoinconsensus.so.0.0.0 libbitcoinconsensus.so.0 || { sudo rm -f libbitcoinconsensus.so.0 && sudo ln -s libbitcoinconsensus.so.0.0.0 libbitcoinconsensus.so.0; }; })
+  (cd /usr/local/lib && { sudo ln -s -f libbitcoinconsensus.so.0.0.0 libbitcoinconsensus.so || { sudo rm -f libbitcoinconsensus.so && sudo ln -s libbitcoinconsensus.so.0.0.0 libbitcoinconsensus.so; }; })
+  PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin:/sbin" ldconfig -n "${bitcoin_install_lib_destination}"
+  [ -d "${bitcoin_install_bin_destination}" ] || mkdir -p "${bitcoin_install_bin_destination}"/
+  sudo install -c "${bitcoin_install_bin_source}"/{bitcoind,bitcoin-qt,bitcoin-cli,bitcoin-tx,bitcoin-util,bitcoin-wallet,test_bitcoin} "${bitcoin_install_bin_destination}"/
+  [ -d "${bitcoin_install_include_destination}" ] || mkdir -p "${bitcoin_install_include_destination}"/
+  sudo install -c -m 644 "${bitcoin_install_include_source}"/bitcoinconsensus.h "${bitcoin_install_include_destination}"/
+  [ -d "${bitcoin_install_man_destination}" ] || mkdir -p "${bitcoin_install_man_destination}"
+  sudo install -c -m 644 "${bitcoin_install_man_source}"/{bitcoind.1,bitcoin-qt.1,bitcoin-cli.1,bitcoin-tx.1,bitcoin-util.1,bitcoin-wallet.1} "${bitcoin_install_man_destination}"/
+  echo "ok."
+
+  echo -n "  Removing temporary files... "
+  rm -r "${bitcoin_core_extract_dir:?}"/
+  rm -r "${temp_directory:?}"/
   echo "ok."
 fi
 
-echo -n "Running the unit tests... "
-unit_test_response="$("${bitcoin_core_binary_dir}"/test_bitcoin --log_level=nothing 2>&1)"
-if [[ "${unit_test_response}" != *"No errors detected"* ]]; then
-  echo -e "\n${unit_test_response}"
-  log_error "Unit tests failed!"
-  echo "Exiting."
-  exit 1
-fi
-echo "ok."
-
 echo -n "Creating application shortcuts... "
 desktop_path="${HOME}/Desktop"
-applications_path="${HOME}/.local/share/applications"
+applications_path="${user_data_dir}/applications"
 shortcut_filename="bitcoin_core.desktop"
 
-curl --silent --show-error --location --fail --output "${bitcoin_core_extract_dir}"/bitcoin.png https://github.com/epiccurious/bitcoin-core-node-builder/raw/master/data/bitcoin.png
+[ -d "$(dirname "${shortcut_image_file}")" ] || mkdir -p "$(dirname "${shortcut_image_file}")"
+[ -f "${shortcut_image_file}" ] || curl --silent --show-error --location --fail --output "${shortcut_image_file}" "${shortcut_image_source}"
 
 ## Create .desktop on the user's Desktop and "Show Applications" directories
 [ -d "${desktop_path}" ] || mkdir -p "${desktop_path}"
@@ -179,8 +202,8 @@ cat << EOF | tee "${applications_path}"/"${shortcut_filename}" > "${desktop_path
 [Desktop Entry]
 Name=Bitcoin Core
 Comment=Launch Bitcoin Core
-Exec=${bitcoin_core_binary_dir}/bitcoin-qt %u
-Icon=${bitcoin_core_extract_dir}/bitcoin.png
+Exec=bitcoin-qt %u
+Icon=${shortcut_image_file}
 Terminal=false
 StartupWMClass=Bitcoin Core
 Type=Application
@@ -193,32 +216,37 @@ chmod u+x "${desktop_path}"/"${shortcut_filename}"
 [ "${CI:-false}" = true ] || gio set "${desktop_path}"/"${shortcut_filename}" "metadata::trusted" true
 echo "ok."
 
-echo -n "Setting the default node behavior... "
-[ -d "${bitcoin_core_data_dir}"/ ] || mkdir "${bitcoin_core_data_dir}"/
+bitcoin_core_config_file="${bitcoin_core_data_dir}/bitcoin.conf"
 if [ ! -f "${bitcoin_core_config_file}" ]; then
+  echo -n "Setting the default node behavior... "
+  [ -d "${bitcoin_core_data_dir}"/ ] || mkdir "${bitcoin_core_data_dir}"/
   {
     echo "server=1"
     echo "mempoolfullrbf=1"
     echo "v2transport=1"
   } > "${bitcoin_core_config_file}"
+  echo "ok."
 fi
-echo "ok."
 
 if [ "$(grep --count --ignore-case "^prune=" "${bitcoin_core_config_file}")" == "0" ]; then
   echo -n "Checking free space in home directory... "
   free_space_in_mib=$(df --output=avail --block-size="1MiB" "${HOME}" | sed 1d)
   echo "$((free_space_in_mib / 1024)) GiB."
 
+  bitcoin_core_blocks_dir="${bitcoin_core_data_dir}/blocks"
+  bitcoin_core_chainstate_dir="${bitcoin_core_data_dir}/chainstate"
+
+  echo -n "Checking data already synced... "
   blocks_size_in_mib="0"
+  chainstate_size_in_mib="0"
   if [ -d "${bitcoin_core_blocks_dir}"/ ]; then
     blocks_size_in_mib=$(du -d0 --block-size="1MiB" "${bitcoin_core_blocks_dir}" | cut -f1)
   fi
-  chainstate_size_in_mib="0"
   if [ -d "${bitcoin_core_chainstate_dir}"/ ]; then
     chainstate_size_in_mib=$(du -d0 --block-size="1MiB" "${bitcoin_core_chainstate_dir}" | cut -f1)
   fi
-
   data_already_synced_in_mib=$((blocks_size_in_mib + chainstate_size_in_mib))
+  echo "$((data_already_synced_in_mib / 1024)) GiB."
 
   ## This constant will need to be adjusted over time as the chain grows
   ## or need to find how to generate this dynamically in a trustless way.
@@ -262,17 +290,17 @@ fi
 echo -n "Starting Bitcoin Core... "
 if [ "${CI:-false}" = true ]; then
   echo -en "\n  Starting bitcoind... "
-  "${bitcoin_core_binary_dir}"/bitcoind --daemonwait
+  bitcoind --daemonwait
 else
-  "${bitcoin_core_binary_dir}"/bitcoin-qt 2> /dev/null &
+  bitcoin-qt 2> /dev/null &
   disown
 fi
 echo "ok."
 echo -n "  Checking the RPC status... "
-"${bitcoin_core_binary_dir}"/bitcoin-cli --rpcwait getrpcinfo > /dev/null
+bitcoin-cli --rpcwait getrpcinfo > /dev/null
 echo "ok."
 
-blockchain_info=$("${bitcoin_core_binary_dir}"/bitcoin-cli --rpcwait getblockchaininfo)
+blockchain_info=$(bitcoin-cli --rpcwait getblockchaininfo)
 ibd_status=$(jq '.initialblockdownload' <<< "${blockchain_info}")
 
 if [ "${ibd_status}" = true ]; then
@@ -330,17 +358,17 @@ while [ "${ibd_status}" = true ]; do
   clear
   echo -en "${sync_status}\n"
 
-  echo -e "Synchronizing can take weeks on a slow connection.\n"
-  echo -e "Close this Terminal window by clicking on the \"X\"."
-  echo -n "This screen will refresh in ${sleep_time} seconds."
-  sleep "${sleep_time}"
-
   if [ "${CI:-false}" = true ] && [ "${size_on_disk_in_mib}" -ge 1 ]; then
     echo "Exiting the script for CI runners."
     exit 0
   fi
 
-  blockchain_info=$("${bitcoin_core_binary_dir}"/bitcoin-cli --rpcwait getblockchaininfo)
+  echo -e "Synchronizing can take weeks on a slow connection.\n"
+  echo -e "Close this Terminal window by clicking on the \"X\"."
+  echo -n "This screen will refresh in ${sleep_time} seconds."
+  sleep "${sleep_time}"
+
+  blockchain_info=$(bitcoin-cli --rpcwait getblockchaininfo)
   echo
   ibd_status=$(jq '.initialblockdownload' <<< "${blockchain_info}")
 done
