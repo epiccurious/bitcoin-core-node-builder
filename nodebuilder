@@ -34,15 +34,15 @@ trap 'handle_error ${LASTNO:-} ${BASH_COMMAND:-} ${LINENO:-}' ERR
 
 target_bitcoin_version="26.0"
 target_bitcoin_architecture="$(uname -m)"
+
 bitcoin_source="https://bitcoincore.org/bin/bitcoin-core-${target_bitcoin_version}"
 bitcoin_tarball_filename="bitcoin-${target_bitcoin_version}-${target_bitcoin_architecture}-linux-gnu.tar.gz"
-bitcoin_hash_filename="SHA256SUMS"
-gpg_signatures_filename="SHA256SUMS.asc"
-gpg_good_signatures_required="7"
-
 bitcoin_tarball_file_source="${bitcoin_source}/${bitcoin_tarball_filename}"
+bitcoin_hash_filename="SHA256SUMS"
 bitcoin_hash_file_source="${bitcoin_source}/${bitcoin_hash_filename}"
+gpg_signatures_filename="SHA256SUMS.asc"
 gpg_signatures_file_source="${bitcoin_source}/${gpg_signatures_filename}"
+gpg_good_signatures_required="7"
 guix_sigs_repo="https://github.com/bitcoin-core/guix.sigs.git"
 
 temp_directory="$(mktemp -d)"
@@ -62,7 +62,10 @@ bitcoin_install_bin_destination="/usr/local/bin"
 bitcoin_install_include_destination="/usr/local/include"
 bitcoin_install_lib_destination="/usr/local/lib"
 bitcoin_install_man_destination="/usr/local/share/man/man1"
+
 user_data_dir="${XDG_DATA_HOME:-${HOME}/.local/share}"
+shortcut_image_source="https://github.com/epiccurious/bitcoin-core-node-builder/raw/master/data/bitcoin.png"
+shortcut_image_file="${user_data_dir}/images/bitcoin.png"
 
 bitcoin_core_data_dir="${HOME}/.bitcoin"
 bitcoin_core_config_file="${bitcoin_core_data_dir}/bitcoin.conf"
@@ -104,9 +107,8 @@ else
 fi
 
 if [[ "${current_bitcoin_version}" == *"${target_bitcoin_version}"* ]]; then
-  echo "ok."
   rm -r "${temp_directory:?}"/
-
+  echo "ok."
 else
   echo
   if ! [ -f "${bitcoin_tarball_destination_file}" ]; then
@@ -114,7 +116,7 @@ else
     curl --silent --show-error --location --fail --output "${bitcoin_tarball_temporary_file}" "${bitcoin_tarball_file_source}"
     curl --silent --show-error --location --fail --output "${bitcoin_hash_file}" "${bitcoin_hash_file_source}"
     curl --silent --show-error --location --fail --output "${gpg_signatures_file}" "${gpg_signatures_file_source}"
-    echo "ok"
+    echo "ok."
 
     echo -n "  Validating the checksum... "
     cd "${temp_directory}"/
@@ -196,8 +198,8 @@ desktop_path="${HOME}/Desktop"
 applications_path="${user_data_dir}/applications"
 shortcut_filename="bitcoin_core.desktop"
 
-mkdir -p "${user_data_dir}"/images/
-curl --silent --show-error --location --fail --output "${user_data_dir}"/images/bitcoin.png https://github.com/epiccurious/bitcoin-core-node-builder/raw/master/data/bitcoin.png
+[ -d "$(dirname "${shortcut_image_file}")" ] || mkdir -p "$(dirname "${shortcut_image_file}")"
+[ -f "${shortcut_image_file}" ] || curl --silent --show-error --location --fail --output "${shortcut_image_file}" "${shortcut_image_source}"
 
 ## Create .desktop on the user's Desktop and "Show Applications" directories
 [ -d "${desktop_path}" ] || mkdir -p "${desktop_path}"
@@ -207,7 +209,7 @@ cat << EOF | tee "${applications_path}"/"${shortcut_filename}" > "${desktop_path
 Name=Bitcoin Core
 Comment=Launch Bitcoin Core
 Exec=bitcoin-qt %u
-Icon="${user_data_dir}"/images/bitcoin.png
+Icon=${shortcut_image_file}
 Terminal=false
 StartupWMClass=Bitcoin Core
 Type=Application
