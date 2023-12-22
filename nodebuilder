@@ -359,15 +359,15 @@ while [ "${ibd_status}" = true ]; do
   clear
   echo -en "${sync_status}\n"
 
-  echo -e "Synchronizing can take weeks on a slow connection.\n"
-  echo -e "Close this Terminal window by clicking on the \"X\"."
-  echo -n "This screen will refresh in ${sleep_time} seconds."
-  sleep "${sleep_time}"
-
   if [ "${CI:-false}" = true ] && [ "${size_on_disk_in_mib}" -ge 1 ]; then
     echo "Exiting the script for CI runners."
     exit 0
   fi
+
+  echo -e "Synchronizing can take weeks on a slow connection.\n"
+  echo -e "Close this Terminal window by clicking on the \"X\"."
+  echo -n "This screen will refresh in ${sleep_time} seconds."
+  sleep "${sleep_time}"
 
   blockchain_info=$(bitcoin-cli --rpcwait getblockchaininfo)
   echo
