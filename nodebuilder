@@ -35,42 +35,11 @@ trap 'handle_error ${LASTNO:-} ${BASH_COMMAND:-} ${LINENO:-}' ERR
 target_bitcoin_version="26.0"
 target_bitcoin_architecture="$(uname -m)"
 
-bitcoin_source="https://bitcoincore.org/bin/bitcoin-core-${target_bitcoin_version}"
-bitcoin_tarball_filename="bitcoin-${target_bitcoin_version}-${target_bitcoin_architecture}-linux-gnu.tar.gz"
-bitcoin_tarball_file_source="${bitcoin_source}/${bitcoin_tarball_filename}"
-bitcoin_hash_filename="SHA256SUMS"
-bitcoin_hash_file_source="${bitcoin_source}/${bitcoin_hash_filename}"
-gpg_signatures_filename="SHA256SUMS.asc"
-gpg_signatures_file_source="${bitcoin_source}/${gpg_signatures_filename}"
-gpg_good_signatures_required="7"
-guix_sigs_repo="https://github.com/bitcoin-core/guix.sigs.git"
-
 temp_directory="$(mktemp -d)"
-bitcoin_tarball_temporary_file="${temp_directory}/${bitcoin_tarball_filename}"
-bitcoin_tarball_destination_file="${HOME}/Downloads/${bitcoin_tarball_filename}"
-bitcoin_hash_file="${temp_directory}/${bitcoin_hash_filename}"
-gpg_signatures_file="${temp_directory}/${gpg_signatures_filename}"
-guix_sigs_temporary_dir="${temp_directory}/guix.sigs"
-guix_sigs_destination_dir="${HOME}/Downloads/guix.sigs"
-
-bitcoin_core_extract_dir="${temp_directory}/bitcoin"
-bitcoin_install_bin_source="${bitcoin_core_extract_dir}/bin"
-bitcoin_install_include_source="${bitcoin_core_extract_dir}/include"
-bitcoin_install_lib_source="${bitcoin_core_extract_dir}/lib"
-bitcoin_install_man_source="${bitcoin_core_extract_dir}/share/man/man1"
-bitcoin_install_bin_destination="/usr/local/bin"
-bitcoin_install_include_destination="/usr/local/include"
-bitcoin_install_lib_destination="/usr/local/lib"
-bitcoin_install_man_destination="/usr/local/share/man/man1"
-
+bitcoin_core_data_dir="${HOME}/.bitcoin"
 user_data_dir="${XDG_DATA_HOME:-${HOME}/.local/share}"
 shortcut_image_source="https://github.com/epiccurious/bitcoin-core-node-builder/raw/master/data/bitcoin.png"
 shortcut_image_file="${user_data_dir}/images/bitcoin.png"
-
-bitcoin_core_data_dir="${HOME}/.bitcoin"
-bitcoin_core_config_file="${bitcoin_core_data_dir}/bitcoin.conf"
-bitcoin_core_blocks_dir="${bitcoin_core_data_dir}/blocks"
-bitcoin_core_chainstate_dir="${bitcoin_core_data_dir}/chainstate"
 
 sleep_time="10"
 
@@ -107,11 +76,38 @@ else
 fi
 
 if [[ "${current_bitcoin_version}" == *"${target_bitcoin_version}"* ]]; then
-  rm -r "${temp_directory:?}"/
   echo "ok."
 else
   echo
+  bitcoin_core_extract_dir="${temp_directory}/bitcoin-core"
+  bitcoin_install_bin_source="${bitcoin_core_extract_dir}/bin"
+  bitcoin_install_include_source="${bitcoin_core_extract_dir}/include"
+  bitcoin_install_lib_source="${bitcoin_core_extract_dir}/lib"
+  bitcoin_install_man_source="${bitcoin_core_extract_dir}/share/man/man1"
+  bitcoin_install_bin_destination="/usr/local/bin"
+  bitcoin_install_include_destination="/usr/local/include"
+  bitcoin_install_lib_destination="/usr/local/lib"
+  bitcoin_install_man_destination="/usr/local/share/man/man1"
+
+  bitcoin_tarball_filename="bitcoin-${target_bitcoin_version}-${target_bitcoin_architecture}-linux-gnu.tar.gz"
+  bitcoin_tarball_destination_file="${HOME}/Downloads/${bitcoin_tarball_filename}"
+  
   if ! [ -f "${bitcoin_tarball_destination_file}" ]; then
+    bitcoin_source="https://bitcoincore.org/bin/bitcoin-core-${target_bitcoin_version}"
+    bitcoin_tarball_file_source="${bitcoin_source}/${bitcoin_tarball_filename}"
+    bitcoin_hash_filename="SHA256SUMS"
+    bitcoin_hash_file_source="${bitcoin_source}/${bitcoin_hash_filename}"
+    gpg_signatures_filename="SHA256SUMS.asc"
+    gpg_signatures_file_source="${bitcoin_source}/${gpg_signatures_filename}"
+    gpg_good_signatures_required="7"
+    guix_sigs_repo="https://github.com/bitcoin-core/guix.sigs.git"
+    bitcoin_tarball_temporary_file="${temp_directory}/${bitcoin_tarball_filename}"
+    bitcoin_hash_file="${temp_directory}/${bitcoin_hash_filename}"
+    gpg_signatures_file="${temp_directory}/${gpg_signatures_filename}"
+    guix_sigs_temporary_dir="${temp_directory}/guix.sigs"
+    guix_sigs_destination_dir="${HOME}/Downloads/guix.sigs"
+
+
     echo -n "  Downloading Bitcoin Core... "
     curl --silent --show-error --location --fail --output "${bitcoin_tarball_temporary_file}" "${bitcoin_tarball_file_source}"
     curl --silent --show-error --location --fail --output "${bitcoin_hash_file}" "${bitcoin_hash_file_source}"
@@ -122,9 +118,7 @@ else
     cd "${temp_directory}"/
     sha256_check="$(grep "${bitcoin_tarball_filename}" "${bitcoin_hash_filename}" | sha256sum --check 2> /dev/null)"
     cd "${HOME}"/
-    if [[ "${sha256_check}" == *"OK" ]]; then
-      echo "ok."
-    else
+    if ! [[ "${sha256_check}" == *"OK" ]]; then
       err "INVALID. The download has failed. This script cannot continue due to security concerns."
       err "Please review the temporary file ${temp_directory}/${bitcoin_hash_file}."
       echo -en "\nPRESS ANY KEY to exit... "
@@ -132,6 +126,7 @@ else
       echo "Exiting."
       exit 1
     fi
+    echo "ok."
 
     echo -n "  Validating the signatures... "
     if [ -d "${guix_sigs_destination_dir}"/ ]; then
@@ -187,7 +182,7 @@ else
   sudo install -c -m 644 "${bitcoin_install_man_source}"/{bitcoind.1,bitcoin-qt.1,bitcoin-cli.1,bitcoin-tx.1,bitcoin-util.1,bitcoin-wallet.1} "${bitcoin_install_man_destination}"/
   echo "ok."
 
-  echo -n "  Removing the tarball directory... "
+  echo -n "  Removing temporary files... "
   rm -r "${bitcoin_core_extract_dir:?}"/
   rm -r "${temp_directory:?}"/
   echo "ok."
@@ -223,8 +218,9 @@ chmod u+x "${desktop_path}"/"${shortcut_filename}"
 echo "ok."
 
 echo -n "Setting the default node behavior... "
-[ -d "${bitcoin_core_data_dir}"/ ] || mkdir "${bitcoin_core_data_dir}"/
+bitcoin_core_config_file="${bitcoin_core_data_dir}/bitcoin.conf"
 if [ ! -f "${bitcoin_core_config_file}" ]; then
+  [ -d "${bitcoin_core_data_dir}"/ ] || mkdir "${bitcoin_core_data_dir}"/
   {
     echo "server=1"
     echo "mempoolfullrbf=1"
@@ -238,15 +234,17 @@ if [ "$(grep --count --ignore-case "^prune=" "${bitcoin_core_config_file}")" == 
   free_space_in_mib=$(df --output=avail --block-size="1MiB" "${HOME}" | sed 1d)
   echo "$((free_space_in_mib / 1024)) GiB."
 
+  bitcoin_core_blocks_dir="${bitcoin_core_data_dir}/blocks"
+  bitcoin_core_chainstate_dir="${bitcoin_core_data_dir}/chainstate"
+  
   blocks_size_in_mib="0"
+  chainstate_size_in_mib="0"
   if [ -d "${bitcoin_core_blocks_dir}"/ ]; then
     blocks_size_in_mib=$(du -d0 --block-size="1MiB" "${bitcoin_core_blocks_dir}" | cut -f1)
   fi
-  chainstate_size_in_mib="0"
   if [ -d "${bitcoin_core_chainstate_dir}"/ ]; then
     chainstate_size_in_mib=$(du -d0 --block-size="1MiB" "${bitcoin_core_chainstate_dir}" | cut -f1)
   fi
-
   data_already_synced_in_mib=$((blocks_size_in_mib + chainstate_size_in_mib))
 
   ## This constant will need to be adjusted over time as the chain grows
