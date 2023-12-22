@@ -360,9 +360,9 @@ while [ "${ibd_status}" = true ]; do
 
   if [ "${CI:-false}" = true ] && [ "${size_on_disk_in_mib}" -ge 1 ]; then
     echo "Exiting the script for CI runners."
-    bitcoin_pid="$(cat "${bitcoin_core_data_dir}"/bitcoin.pid)"
+    bitcoin_pid="$(cat "${bitcoin_core_data_dir}"/bitcoind.pid)"
     bitcoin-cli stop
-    while ps -p "$(cat ~/.bitcoin/bitcoind.pid)"; do sleep 0.1; done &>/dev/null
+    while ps -p "${bitcoin_pid}"; do sleep 0.1; done &>/dev/null
     exit 0
   fi
 
