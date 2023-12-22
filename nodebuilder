@@ -38,7 +38,7 @@ target_bitcoin_architecture="$(uname -m)"
 temp_directory="$(mktemp -d)"
 bitcoin_core_data_dir="${HOME}/.bitcoin"
 user_data_dir="${XDG_DATA_HOME:-${HOME}/.local/share}"
-shortcut_image_source="https://github.com/epiccurious/bitcoin-core-node-builder/raw/master/data/bitcoin.png"
+shortcut_image_source="https://i.imgur.com/27V69CR.png"
 shortcut_image_file="${user_data_dir}/images/bitcoin.png"
 
 (timeout --preserve-status 0.1 nc -z 1.1.1.1 53 &&
@@ -358,6 +358,9 @@ while [ "${ibd_status}" = true ]; do
 
   if [ "${CI:-false}" = true ] && [ "${size_on_disk_in_mib}" -ge 1 ]; then
     echo "Exiting the script for CI runners."
+    bitcoin_pid="$(cat "${bitcoin_core_data_dir}"/bitcoind.pid)"
+    bitcoin-cli stop
+    while ps -p "${bitcoin_pid}"; do sleep 0.01; done &> /dev/null
     exit 0
   fi
 
