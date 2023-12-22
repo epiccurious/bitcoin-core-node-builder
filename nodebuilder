@@ -217,17 +217,17 @@ chmod u+x "${desktop_path}"/"${shortcut_filename}"
 [ "${CI:-false}" = true ] || gio set "${desktop_path}"/"${shortcut_filename}" "metadata::trusted" true
 echo "ok."
 
-echo -n "Setting the default node behavior... "
 bitcoin_core_config_file="${bitcoin_core_data_dir}/bitcoin.conf"
 if [ ! -f "${bitcoin_core_config_file}" ]; then
+  echo -n "Setting the default node behavior... "
   [ -d "${bitcoin_core_data_dir}"/ ] || mkdir "${bitcoin_core_data_dir}"/
   {
     echo "server=1"
     echo "mempoolfullrbf=1"
     echo "v2transport=1"
   } > "${bitcoin_core_config_file}"
+  echo "ok."
 fi
-echo "ok."
 
 if [ "$(grep --count --ignore-case "^prune=" "${bitcoin_core_config_file}")" == "0" ]; then
   echo -n "Checking free space in home directory... "
@@ -237,6 +237,7 @@ if [ "$(grep --count --ignore-case "^prune=" "${bitcoin_core_config_file}")" == 
   bitcoin_core_blocks_dir="${bitcoin_core_data_dir}/blocks"
   bitcoin_core_chainstate_dir="${bitcoin_core_data_dir}/chainstate"
   
+  echo -n "Checking data already synced... "
   blocks_size_in_mib="0"
   chainstate_size_in_mib="0"
   if [ -d "${bitcoin_core_blocks_dir}"/ ]; then
@@ -246,6 +247,7 @@ if [ "$(grep --count --ignore-case "^prune=" "${bitcoin_core_config_file}")" == 
     chainstate_size_in_mib=$(du -d0 --block-size="1MiB" "${bitcoin_core_chainstate_dir}" | cut -f1)
   fi
   data_already_synced_in_mib=$((blocks_size_in_mib + chainstate_size_in_mib))
+  echo "$((data_already_synced_in_mib / 1024)) GiB."
 
   ## This constant will need to be adjusted over time as the chain grows
   ## or need to find how to generate this dynamically in a trustless way.
