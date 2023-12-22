@@ -91,7 +91,7 @@ else
 
   bitcoin_tarball_filename="bitcoin-${target_bitcoin_version}-${target_bitcoin_architecture}-linux-gnu.tar.gz"
   bitcoin_tarball_destination_file="${HOME}/Downloads/${bitcoin_tarball_filename}"
-  
+
   if ! [ -f "${bitcoin_tarball_destination_file}" ]; then
     bitcoin_source="https://bitcoincore.org/bin/bitcoin-core-${target_bitcoin_version}"
     bitcoin_tarball_file_source="${bitcoin_source}/${bitcoin_tarball_filename}"
@@ -106,7 +106,6 @@ else
     gpg_signatures_file="${temp_directory}/${gpg_signatures_filename}"
     guix_sigs_temporary_dir="${temp_directory}/guix.sigs"
     guix_sigs_destination_dir="${HOME}/Downloads/guix.sigs"
-
 
     echo -n "  Downloading Bitcoin Core... "
     curl --silent --show-error --location --fail --output "${bitcoin_tarball_temporary_file}" "${bitcoin_tarball_file_source}"
@@ -236,7 +235,7 @@ if [ "$(grep --count --ignore-case "^prune=" "${bitcoin_core_config_file}")" == 
 
   bitcoin_core_blocks_dir="${bitcoin_core_data_dir}/blocks"
   bitcoin_core_chainstate_dir="${bitcoin_core_data_dir}/chainstate"
-  
+
   echo -n "Checking data already synced... "
   blocks_size_in_mib="0"
   chainstate_size_in_mib="0"
