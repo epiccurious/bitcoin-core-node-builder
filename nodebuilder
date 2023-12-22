@@ -6,7 +6,7 @@ set -o nounset
 set -o pipefail
 
 log_error() {
-  echo "[$(date +'%Y-%m-%dT%H:%M:%S')]: ERROR $*" >&2
+  echo "[$(date +'%Y-%m-%dT%H:%M:%S')] ERROR: $*" >&2
 }
 
 # shellcheck disable=SC2317
@@ -26,11 +26,11 @@ handle_exit() {
 # shellcheck disable=SC2317
 handle_error() {
   ensure_cursor_is_on_column_one
-  log_error "Command '$1 $2' failed at line $3."
+  log_error "Failed to run '${BASH_COMMAND}' on line $1."
 }
 
 trap handle_exit EXIT
-trap 'handle_error ${LASTNO:-} ${BASH_COMMAND:-} ${LINENO:-}' ERR
+trap 'handle_error ${LINENO:-}' ERR
 
 target_bitcoin_version="26.0"
 target_bitcoin_architecture="$(uname -m)"
@@ -40,8 +40,6 @@ bitcoin_core_data_dir="${HOME}/.bitcoin"
 user_data_dir="${XDG_DATA_HOME:-${HOME}/.local/share}"
 shortcut_image_source="https://github.com/epiccurious/bitcoin-core-node-builder/raw/master/data/bitcoin.png"
 shortcut_image_file="${user_data_dir}/images/bitcoin.png"
-
-sleep_time="10"
 
 (timeout --preserve-status 0.1 nc -z 1.1.1.1 53 &&
   timeout --preserve-status 0.1 nc -z 8.8.8.8 53 &&
@@ -289,7 +287,6 @@ fi
 
 echo -n "Starting Bitcoin Core... "
 if [ "${CI:-false}" = true ]; then
-  echo -en "\n  Starting bitcoind... "
   bitcoind --daemonwait
 else
   bitcoin-qt 2> /dev/null &
@@ -300,6 +297,7 @@ echo -n "  Checking the RPC status... "
 bitcoin-cli --rpcwait getrpcinfo > /dev/null
 echo "ok."
 
+sleep_time="10"
 blockchain_info=$(bitcoin-cli --rpcwait getblockchaininfo)
 ibd_status=$(jq '.initialblockdownload' <<< "${blockchain_info}")
 
