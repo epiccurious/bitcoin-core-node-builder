@@ -29,7 +29,7 @@ Open the Terminal and run the following command:
 /bin/bash -c "$(curl -fsSL https://github.com/epiccurious/bitcoin-core-node-builder/raw/master/nodebuilder)"
 ```
 
-NOTE: This code is still under development and not yet ready. Test at your own risk. You can track progress under [the Minimum Viable Product milestone](https://github.com/epiccurious/bitcoin-core-node-builder/milestone/1).
+NOTE: This code is still under development and not yet ready. Test at your own risk. You can track progress under the Minimum Viable Product milestone.
 
 ## What Does This Script Do?
 
