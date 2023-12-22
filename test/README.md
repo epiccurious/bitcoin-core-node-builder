@@ -16,7 +16,7 @@ This page outlines the procedures to test `bitcoin-core-node-builder` scripts.
 
 _**Before**_ opening a pull request, you must validate your changes against three third-party static analysis tools `ShellCheck`, `shfmt`, and `markdown-link-check`.
 
-_**After**_ opening a pull request, GitHub Actions CI will [automatically run these tools](https://github.com/epiccurious/bitcoin-core-node-builder/actions/workflows/bash_validation_ci.yaml) for you.
+_**After**_ opening a pull request, GitHub Actions CI will [automatically run these tools https github dot com/epiccurious/bitcoin-core-node-builder/actions/workflows/bash_validation_ci.yaml for you.
 
 ### Details About the Validation Tools
 
